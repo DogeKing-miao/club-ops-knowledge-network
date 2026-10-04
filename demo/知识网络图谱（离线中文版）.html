@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>社团运营知识网络 · 离线中文图谱</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --panel:#ffffff; --ink:#1c2430; --muted:#6b7280; --rule:#e3e6ea;
+    --edge:#b9c0c9; --edge-hl:#c05621; --label:#243040; --accent:#1f4e79;
+    --c-Club:#1f4e79; --c-Student:#2e7d6b; --c-Department:#8a6d3b; --c-Teacher:#7d5ba6;
+    --c-Activity:#c05621; --c-Venue:#2b6cb0; --c-InterestTag:#b7791f; --c-Recruitment:#b83280;
+    --c-Notice:#4a5568; --c-Award:#946200; --c-Term:#6b7280;
+  }
+  body.dark{
+    --bg:#12161c; --panel:#1a1f27; --ink:#e8edf4; --muted:#98a2b3; --rule:#2a313c;
+    --edge:#3c4553; --edge-hl:#f0a05a; --label:#dfe6ef; --accent:#7fb3e0;
+    --c-Club:#5b9bd5; --c-Student:#4bc0a0; --c-Department:#c9a227; --c-Teacher:#b18cdb;
+    --c-Activity:#f08a4b; --c-Venue:#63a4e8; --c-InterestTag:#e0b040; --c-Recruitment:#e46bb0;
+    --c-Notice:#9aa6b6; --c-Award:#d4a017; --c-Term:#98a2b3;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",Arial,sans-serif;
+       background:var(--bg);color:var(--ink)}
+  header{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--panel);
+         border-bottom:1px solid var(--rule);flex-wrap:wrap}
+  h1{margin:0;font-size:19px;color:var(--accent)}
+  .stats{font-size:12.5px;color:var(--muted)}
+  .stats b{color:var(--ink)}
+  .spacer{flex:1}
+  button{font-family:inherit;font-size:12.5px;padding:6px 11px;border-radius:8px;cursor:pointer;
+         border:1px solid var(--rule);background:var(--panel);color:var(--ink)}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .wrap{display:grid;grid-template-columns:210px 1fr 300px;gap:0;height:calc(100vh - 62px)}
+  .side{background:var(--panel);border-right:1px solid var(--rule);padding:12px;overflow:auto}
+  .side.right{border-right:0;border-left:1px solid var(--rule)}
+  .side h3{margin:2px 0 8px;font-size:12.5px;color:var(--muted);font-weight:600;letter-spacing:.5px}
+  .legend{display:flex;flex-direction:column;gap:6px}
+  .legend .row{display:flex;align-items:center;gap:8px;font-size:12.5px;cursor:pointer;
+               padding:4px 6px;border-radius:7px}
+  .legend .row:hover{background:var(--bg)}
+  .legend .row.off{opacity:.38;text-decoration:line-through}
+  .dot{width:11px;height:11px;border-radius:50%;flex:none}
+  .legend .n{margin-left:auto;color:var(--muted);font-size:11.5px}
+  #stage{position:relative;overflow:hidden;background:
+     radial-gradient(circle at 30% 20%, rgba(31,78,121,.05), transparent 60%)}
+  svg{width:100%;height:100%;display:block;cursor:grab}
+  svg.grabbing{cursor:grabbing}
+  .link{stroke:var(--edge);stroke-width:1.3;fill:none;transition:opacity .15s}
+  .link.hl{stroke:var(--edge-hl);stroke-width:2.6}
+  .dim{opacity:.08}
+  .node{cursor:pointer}
+  .node circle{stroke:#fff;stroke-width:1.6}
+  body.dark .node circle{stroke:#0d1117}
+  .node text{font-size:11.5px;fill:var(--label);text-anchor:middle;pointer-events:none;
+             paint-order:stroke;stroke:var(--bg);stroke-width:2.6px}
+  .node.sel circle{stroke:var(--edge-hl);stroke-width:3}
+  .bar{position:absolute;left:12px;bottom:12px;right:12px;display:flex;gap:8px;flex-wrap:wrap;
+       background:color-mix(in srgb, var(--panel) 88%, transparent);border:1px solid var(--rule);
+       border-radius:12px;padding:9px 11px}
+  .tip{position:absolute;left:12px;top:12px;font-size:12px;color:var(--muted);background:var(--panel);
+       border:1px solid var(--rule);border-radius:9px;padding:6px 10px}
+  #search{width:100%;padding:7px 9px;border:1px solid var(--rule);border-radius:8px;
+          background:var(--bg);color:var(--ink);font-family:inherit;font-size:12.5px}
+  .kv{display:grid;grid-template-columns:74px 1fr;gap:4px 8px;font-size:12.5px;margin:6px 0 10px}
+  .kv .k{color:var(--muted)}
+  .kv .v{word-break:break-all}
+  .rel{font-size:12px;color:var(--muted);padding:3px 0;border-bottom:1px dashed var(--rule)}
+  .rel b{color:var(--ink);font-weight:600}
+  .badge{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:99px;color:#fff}
+  .hint{font-size:11.5px;color:var(--muted);line-height:1.7}
+</style>
+</head>
+<body>
+<header>
+  <h1>社团运营知识网络 · 离线中文图谱</h1>
+  <div class="stats" id="stats"></div>
+  <div class="spacer"></div>
+  <button id="theme">🌓 切换深浅色</button>
+  <button id="reset">↺ 复位视图</button>
+</header>
+
+<div class="wrap">
+  <div class="side">
+    <h3>节点类型（点击可隐藏/显示）</h3>
+    <div class="legend" id="legend"></div>
+    <h3 style="margin-top:14px">搜索</h3>
+    <input id="search" placeholder="输入姓名 / 社团 / 活动…">
+    <h3 style="margin-top:14px">怎么用</h3>
+    <div class="hint">
+      · 滚轮缩放，空白处拖动平移<br>
+      · 拖节点可挪位置<br>
+      · 点节点看右侧详情<br>
+      · 底部按钮=按功能高亮子图
+    </div>
+  </div>
+
+  <div id="stage">
+    <div class="tip" id="tip">把鼠标移到节点上试试</div>
+    <svg id="svg"><g id="vp"></g></svg>
+    <div class="bar" id="bar"></div>
+  </div>
+
+  <div class="side right">
+    <h3>节点详情</h3>
+    <div id="detail"><div class="hint">点左边图里的任意一个节点，这里会显示它的中文属性与直接关系。</div></div>
+  </div>
+</div>
+
+<script>
+const D = {"nodes": [{"id": "C01", "label": "Club", "name": "星野天文社", "note": "类别：学术科技；成立：2021-03-12；指导老师：郭明远", "x": 284.5, "y": 189.3, "deg": 12}, {"id": "C02", "label": "Club", "name": "青蓝辩论社", "note": "类别：人文社科；成立：2019-09-08；指导老师：沈一楠", "x": 919.9, "y": 675, "deg": 5}, {"id": "C03", "label": "Club", "name": "拾光摄影社", "note": "类别：文化艺术；成立：2020-05-20；社长：吴桐", "x": 867.2, "y": 45, "deg": 8}, {"id": "S001", "label": "Student", "name": "林一舟", "note": "2024 级 · 天文学 · 星野天文社社长", "x": 164.9, "y": 219.2, "deg": 6}, {"id": "S002", "label": "Student", "name": "赵敏", "note": "2023 级 · 物理学 · 观测部部长", "x": 500.0, "y": 191.2, "deg": 6}, {"id": "S003", "label": "Student", "name": "陈嘉禾", "note": "2024 级 · 新闻传播 · 同时在两个社团（跨社团样例）", "x": 448.9, "y": 45, "deg": 4}, {"id": "S004", "label": "Student", "name": "王梓涵", "note": "2023 级 · 计算机 · 摄影社成员 · 多场活动报名", "x": 803.4, "y": 45, "deg": 8}, {"id": "S005", "label": "Student", "name": "李思远", "note": "2024 级 · 哲学 · 报名天文社招新但未转正 · 兴趣含天文观测", "x": 380.9, "y": 675, "deg": 5}, {"id": "S006", "label": "Student", "name": "周雨桐", "note": "2024 级 · 汉语言文学 · 报名天文社招新但未转正", "x": 530.0, "y": 675, "deg": 6}, {"id": "S007", "label": "Student", "name": "吴桐", "note": "2023 级 · 视觉传达 · 拾光摄影社社长", "x": 775.0, "y": 263.4, "deg": 7}, {"id": "S008", "label": "Student", "name": "郑亦航", "note": "2024 级 · 数学 · 已退出天文社（退出样例）", "x": 725.3, "y": 45, "deg": 3}, {"id": "D01", "label": "Department", "name": "观测部", "note": "归属：星野天文社；职能：活动观测执行", "x": 614.3, "y": 45, "deg": 2}, {"id": "D02", "label": "Department", "name": "宣传部", "note": "归属：星野天文社；职能：海报与推文", "x": 45, "y": 45, "deg": 1}, {"id": "D03", "label": "Department", "name": "赛事部", "note": "归属：青蓝辩论社；职能：赛事组织", "x": 800.0, "y": 675, "deg": 1}, {"id": "T01", "label": "Teacher", "name": "郭明远", "note": "天文系；指导星野天文社", "x": 45, "y": 80.8, "deg": 1}, {"id": "T02", "label": "Teacher", "name": "沈一楠", "note": "哲学系；指导青蓝辩论社", "x": 1135, "y": 627.7, "deg": 1}, {"id": "A01", "label": "Activity", "name": "秋季观星夜", "note": "2025-10-18 · 东区操场 · 名额 40 · 已报名 4 人 / 签到 2 人", "x": 365.7, "y": 134.1, "deg": 11}, {"id": "A02", "label": "Activity", "name": "新生辩论赛", "note": "2025-10-25 · 图书馆报告厅 · 名额 32 · 已报名 3 人", "x": 550.7, "y": 581.4, "deg": 9}, {"id": "A03", "label": "Activity", "name": "校园人像外拍", "note": "2025-10-18 · 东区操场（与 A01 同日同场地 → 冲突样例）", "x": 868.6, "y": 164.7, "deg": 9}, {"id": "A04", "label": "Activity", "name": "夜跑打卡周", "note": "2025-11-10 · 东区操场 · 名额 60 · 已报名 3 人", "x": 690.1, "y": 45, "deg": 6}, {"id": "V01", "label": "Venue", "name": "东区操场", "note": "容量 200 · 东区", "x": 528.0, "y": 45, "deg": 3}, {"id": "V02", "label": "Venue", "name": "学生活动中心 302", "note": "容量 40 · 学生活动中心", "x": 1135, "y": 675, "deg": 0}, {"id": "V03", "label": "Venue", "name": "图书馆报告厅", "note": "容量 120 · 图书馆", "x": 152.0, "y": 675, "deg": 1}, {"id": "G01", "label": "InterestTag", "name": "天文观测", "note": "用于兴趣匹配与社团标签", "x": 252.4, "y": 404.3, "deg": 4}, {"id": "G02", "label": "InterestTag", "name": "摄影", "note": "用于兴趣匹配与社团标签", "x": 589.2, "y": 45, "deg": 4}, {"id": "G03", "label": "InterestTag", "name": "辩论", "note": "用于兴趣匹配与社团标签", "x": 656.9, "y": 675, "deg": 3}, {"id": "G04", "label": "InterestTag", "name": "长跑", "note": "用于兴趣匹配与社团标签", "x": 929.6, "y": 45, "deg": 3}, {"id": "R01", "label": "Recruitment", "name": "星野天文社 2025 秋季招新", "note": "名额 15 · 状态：进行中 · 2 人已报名未转正", "x": 252.9, "y": 580.6, "deg": 3}, {"id": "R02", "label": "Recruitment", "name": "拾光摄影社 2025 秋季招新", "note": "名额 10 · 状态：进行中", "x": 1135, "y": 96.6, "deg": 2}, {"id": "N01", "label": "Notice", "name": "秋季观星夜开始报名", "note": "2025-10-08 发布 · 关联活动 A01", "x": 45, "y": 165.7, "deg": 2}, {"id": "N02", "label": "Notice", "name": "校园人像外拍开始报名", "note": "2025-10-08 发布 · 关联活动 A03", "x": 1135, "y": 45, "deg": 2}, {"id": "W01", "label": "Award", "name": "省级天文知识竞赛 二等奖", "note": "2025 年 · 归属星野天文社", "x": 45, "y": 347.7, "deg": 2}, {"id": "W02", "label": "Award", "name": "校级辩论赛 冠军", "note": "2025 年 · 归属青蓝辩论社", "x": 854.8, "y": 675, "deg": 2}, {"id": "M01", "label": "Term", "name": "2025 秋季学期", "note": "2025-09-01 至 2026-01-15（活动与统计的时间基准）", "x": 624.2, "y": 306.2, "deg": 4}], "links": [{"s": "S001", "t": "C01", "type": "MEMBER_OF", "props": {"role": "社长", "joinDate": "2024-09-10", "status": "在册"}}, {"s": "S002", "t": "C01", "type": "MEMBER_OF", "props": {"role": "观测部部长", "joinDate": "2024-09-12", "status": "在册"}}, {"s": "S003", "t": "C01", "type": "MEMBER_OF", "props": {"role": "成员", "joinDate": "2024-10-08", "status": "在册"}}, {"s": "S003", "t": "C03", "type": "MEMBER_OF", "props": {"role": "成员", "joinDate": "2025-03-02", "status": "在册"}}, {"s": "S004", "t": "C03", "type": "MEMBER_OF", "props": {"role": "成员", "joinDate": "2023-10-11", "status": "在册"}}, {"s": "S007", "t": "C03", "type": "MEMBER_OF", "props": {"role": "社长", "joinDate": "2023-09-05", "status": "在册"}}, {"s": "S008", "t": "C01", "type": "MEMBER_OF", "props": {"role": "成员", "joinDate": "2024-09-20", "status": "已退出", "quitDate": "2025-11-20"}}, {"s": "S002", "t": "D01", "type": "IN_DEPARTMENT", "props": {}}, {"s": "D01", "t": "C01", "type": "BELONGS_TO", "props": {}}, {"s": "D02", "t": "C01", "type": "BELONGS_TO", "props": {}}, {"s": "D03", "t": "C02", "type": "BELONGS_TO", "props": {}}, {"s": "T01", "t": "C01", "type": "ADVISES", "props": {}}, {"s": "T02", "t": "C02", "type": "ADVISES", "props": {}}, {"s": "C01", "t": "A01", "type": "HOSTS", "props": {}}, {"s": "C02", "t": "A02", "type": "HOSTS", "props": {}}, {"s": "C03", "t": "A03", "type": "HOSTS", "props": {}}, {"s": "C03", "t": "A04", "type": "HOSTS", "props": {}}, {"s": "A01", "t": "V01", "type": "HELD_AT", "props": {}}, {"s": "A02", "t": "V03", "type": "HELD_AT", "props": {}}, {"s": "A03", "t": "V01", "type": "HELD_AT", "props": {}}, {"s": "A04", "t": "V01", "type": "HELD_AT", "props": {}}, {"s": "S001", "t": "A01", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-09T10:00:00", "status": "已报名"}}, {"s": "S002", "t": "A01", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-09T11:30:00", "status": "已报名"}}, {"s": "S003", "t": "A01", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-10T09:05:00", "status": "已报名"}}, {"s": "S004", "t": "A01", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-12T20:31:00", "status": "已报名"}}, {"s": "S005", "t": "A02", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-14T13:20:00", "status": "已报名"}}, {"s": "S006", "t": "A02", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-14T19:02:00", "status": "已报名"}}, {"s": "S007", "t": "A02", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-15T08:47:00", "status": "已报名"}}, {"s": "S004", "t": "A03", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-11T16:25:00", "status": "已报名"}}, {"s": "S007", "t": "A03", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-13T12:09:00", "status": "已报名"}}, {"s": "S004", "t": "A04", "type": "SIGNED_UP", "props": {"signedAt": "2025-11-02T21:15:00", "status": "已报名"}}, {"s": "S007", "t": "A04", "type": "SIGNED_UP", "props": {"signedAt": "2025-11-03T07:38:00", "status": "已报名"}}, {"s": "S008", "t": "A04", "type": "SIGNED_UP", "props": {"signedAt": "2025-11-03T22:04:00", "status": "已报名"}}, {"s": "S001", "t": "A01", "type": "ATTENDED", "props": {}}, {"s": "S002", "t": "A01", "type": "ATTENDED", "props": {}}, {"s": "S005", "t": "A02", "type": "ATTENDED", "props": {}}, {"s": "S006", "t": "A02", "type": "ATTENDED", "props": {}}, {"s": "S004", "t": "A03", "type": "ATTENDED", "props": {}}, {"s": "S007", "t": "A03", "type": "ATTENDED", "props": {}}, {"s": "S001", "t": "G01", "type": "HAS_TAG", "props": {}}, {"s": "S002", "t": "G01", "type": "HAS_TAG", "props": {}}, {"s": "S002", "t": "G04", "type": "HAS_TAG", "props": {}}, {"s": "S003", "t": "G02", "type": "HAS_TAG", "props": {}}, {"s": "S004", "t": "G02", "type": "HAS_TAG", "props": {}}, {"s": "S004", "t": "G04", "type": "HAS_TAG", "props": {}}, {"s": "S005", "t": "G01", "type": "HAS_TAG", "props": {}}, {"s": "S005", "t": "G03", "type": "HAS_TAG", "props": {}}, {"s": "S006", "t": "G03", "type": "HAS_TAG", "props": {}}, {"s": "S007", "t": "G02", "type": "HAS_TAG", "props": {}}, {"s": "S008", "t": "G04", "type": "HAS_TAG", "props": {}}, {"s": "C01", "t": "G01", "type": "TAGGED_WITH", "props": {}}, {"s": "C02", "t": "G03", "type": "TAGGED_WITH", "props": {}}, {"s": "C03", "t": "G02", "type": "TAGGED_WITH", "props": {}}, {"s": "S005", "t": "R01", "type": "APPLIED_TO", "props": {"status": "待审核", "submittedAt": "2025-09-20"}}, {"s": "S006", "t": "R01", "type": "APPLIED_TO", "props": {"status": "待审核", "submittedAt": "2025-09-21"}}, {"s": "S004", "t": "R02", "type": "APPLIED_TO", "props": {"status": "已通过", "submittedAt": "2025-09-19"}}, {"s": "R01", "t": "C01", "type": "FOR_CLUB", "props": {}}, {"s": "R02", "t": "C03", "type": "FOR_CLUB", "props": {}}, {"s": "C01", "t": "N01", "type": "PUBLISHES", "props": {}}, {"s": "C03", "t": "N02", "type": "PUBLISHES", "props": {}}, {"s": "N01", "t": "A01", "type": "ANNOUNCES", "props": {}}, {"s": "N02", "t": "A03", "type": "ANNOUNCES", "props": {}}, {"s": "S001", "t": "W01", "type": "WON", "props": {}}, {"s": "S006", "t": "W02", "type": "WON", "props": {}}, {"s": "W01", "t": "C01", "type": "AWARDED_TO", "props": {}}, {"s": "W02", "t": "C02", "type": "AWARDED_TO", "props": {}}, {"s": "S001", "t": "A01", "type": "ORGANIZED", "props": {}}, {"s": "S006", "t": "A02", "type": "ORGANIZED", "props": {}}, {"s": "S007", "t": "A03", "type": "ORGANIZED", "props": {}}, {"s": "A01", "t": "M01", "type": "IN_TERM", "props": {}}, {"s": "A02", "t": "M01", "type": "IN_TERM", "props": {}}, {"s": "A03", "t": "M01", "type": "IN_TERM", "props": {}}, {"s": "A04", "t": "M01", "type": "IN_TERM", "props": {}}], "scenarios": [{"id": "F8", "title": "F8 场地冲突", "desc": "东区操场 2025-10-18：秋季观星夜 与 校园人像外拍 撞车", "nodes": ["A01", "A03", "V01"], "rels": ["HELD_AT"]}, {"id": "F9", "title": "F9 招新转化", "desc": "报名了却没转正：李思远、周雨桐", "nodes": ["S005", "S006", "R01", "C01"], "rels": ["APPLIED_TO", "FOR_CLUB"]}, {"id": "F33", "title": "F33 报名者筛选", "desc": "按标签算匹配度：李思远命中「天文观测」", "nodes": ["S005", "S006", "S004", "R01", "R02", "C01", "C03", "G01", "G02", "G03"], "rels": ["APPLIED_TO", "FOR_CLUB", "TAGGED_WITH", "HAS_TAG"]}, {"id": "F6", "title": "F6 报名与签到", "desc": "观星夜报名 4 人、签到 2 人：王梓涵、陈嘉禾报名没来", "nodes": ["A01", "S001", "S002", "S003", "S004"], "rels": ["SIGNED_UP", "ATTENDED"]}, {"id": "F32", "title": "F32 跨社团成员", "desc": "陈嘉禾同时在星野天文社与拾光摄影社", "nodes": ["S003", "C01", "C03"], "rels": ["MEMBER_OF"]}, {"id": "F17", "title": "F17 兴趣匹配", "desc": "李思远感兴趣「天文观测」但还没入社", "nodes": ["S005", "G01", "C01"], "rels": ["HAS_TAG", "TAGGED_WITH"]}]};
+const LABEL_ZH = {Club:'社团',Student:'学生',Department:'部门',Teacher:'指导老师',Activity:'活动',
+  Venue:'场地',InterestTag:'兴趣标签',Recruitment:'招新计划',Notice:'通知',Award:'获奖',Term:'学期'};
+const REL_ZH = {MEMBER_OF:'加入社团',IN_DEPARTMENT:'隶属部门',BELONGS_TO:'部门属于社团',ADVISES:'指导社团',
+  HOSTS:'举办活动',HELD_AT:'举办于场地',SIGNED_UP:'报名活动',ATTENDED:'签到',HAS_TAG:'感兴趣',
+  TAGGED_WITH:'社团标签',APPLIED_TO:'报名招新',FOR_CLUB:'招新归属社团',PUBLISHES:'发布通知',
+  ANNOUNCES:'通知关联活动',WON:'获得奖项',AWARDED_TO:'奖项归属社团',ORGANIZED:'组织活动',IN_TERM:'属于学期'};
+const PROP_ZH = {clubId:'社团编号',studentId:'学号',deptId:'部门编号',teacherId:'教师编号',activityId:'活动编号',
+  venueId:'场地编号',tagId:'标签编号',recruitId:'招新编号',noticeId:'通知编号',awardId:'获奖编号',termId:'学期编号',
+  name:'名称',title:'标题',note:'备注',grade:'年级',major:'专业',category:'类别',founded:'成立时间',
+  capacity:'容量',remaining:'剩余名额',date:'日期',status:'状态',quota:'名额',year:'年份',
+  startDate:'开始日期',endDate:'结束日期',role:'职务',joinDate:'入社时间',quitDate:'退出时间',
+  signedAt:'报名时间',submittedAt:'提交时间'};
+
+const NMAP = {}; D.nodes.forEach(n => NMAP[n.id] = n);
+const LINKS = D.links.map((l,i) => ({...l, i}));
+const near = {}; D.nodes.forEach(n => near[n.id] = new Set([n.id]));
+LINKS.forEach(l => { near[l.s].add(l.t); near[l.t].add(l.s); });
+
+const svg = document.getElementById('svg'), vp = document.getElementById('vp');
+const NS = 'http://www.w3.org/2000/svg';
+let view = {x:0, y:0, k:1};
+const hidden = new Set();
+let active = null;      // 场景高亮
+let selected = null;    // 选中节点
+
+function el(tag, attrs){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);return e;}
+
+// 图例
+const legend = document.getElementById('legend');
+const labelCount = {}; D.nodes.forEach(n => labelCount[n.label]=(labelCount[n.label]||0)+1);
+Object.keys(LABEL_ZH).filter(l => labelCount[l]).sort((a,b)=>labelCount[b]-labelCount[a]).forEach(lab => {
+  const row = document.createElement('div');
+  row.className = 'row'; row.dataset.label = lab;
+  row.innerHTML = `<span class="dot" style="background:var(--c-${lab})"></span>${LABEL_ZH[lab]}<span class="n">${labelCount[lab]}</span>`;
+  row.onclick = () => { hidden.has(lab) ? hidden.delete(lab) : hidden.add(lab); row.classList.toggle('off'); render(); };
+  legend.appendChild(row);
+});
+
+// 场景按钮
+const bar = document.getElementById('bar');
+D.scenarios.forEach(s => {
+  const b = document.createElement('button');
+  b.textContent = s.title; b.title = s.desc; b.dataset.id = s.id;
+  b.onclick = () => {
+    active = (active && active.id === s.id) ? null : s;
+    document.querySelectorAll('#bar button').forEach(x => x.classList.toggle('on', active && x.dataset.id === active.id));
+    document.getElementById('tip').textContent = active ? active.desc : '把鼠标移到节点上试试';
+    render();
+  };
+  bar.appendChild(b);
+});
+const all = document.createElement('button'); all.textContent = '显示全部';
+all.onclick = () => { active=null; selected=null; document.querySelectorAll('#bar button').forEach(x=>x.classList.remove('on')); document.getElementById('tip').textContent='把鼠标移到节点上试试'; render(); };
+bar.appendChild(all);
+
+// 交互：缩放 / 平移 / 拖拽
+let drag = null, pan = null;
+svg.addEventListener('wheel', e => {
+  e.preventDefault();
+  const r = svg.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  const k2 = Math.min(3, Math.max(.35, view.k * (e.deltaY < 0 ? 1.12 : .89)));
+  view.x = mx - (mx - view.x) * (k2 / view.k);
+  view.y = my - (my - view.y) * (k2 / view.k);
+  view.k = k2; applyView();
+}, {passive:false});
+svg.addEventListener('pointerdown', e => {
+  const nodeEl = e.target.closest('.node');
+  if (nodeEl) { drag = nodeEl.dataset.id; svg.setPointerCapture(e.pointerId); }
+  else { pan = {x:e.clientX, y:e.clientY, ox:view.x, oy:view.y}; svg.classList.add('grabbing'); svg.setPointerCapture(e.pointerId); }
+});
+svg.addEventListener('pointermove', e => {
+  if (drag) {
+    const r = svg.getBoundingClientRect();
+    const n = NMAP[drag];
+    n.x = (e.clientX - r.left - view.x) / view.k; n.y = (e.clientY - r.top - view.y) / view.k;
+    place();
+  } else if (pan) {
+    view.x = pan.ox + (e.clientX - pan.x); view.y = pan.oy + (e.clientY - pan.y); applyView();
+  }
+});
+svg.addEventListener('pointerup', () => { drag = null; pan = null; svg.classList.remove('grabbing'); });
+document.getElementById('reset').onclick = () => { view = {x:0,y:0,k:1}; applyView(); };
+document.getElementById('theme').onclick = () => document.body.classList.toggle('dark');
+document.getElementById('search').oninput = e => {
+  const q = e.target.value.trim();
+  if (!q) { selected = null; render(); return; }
+  const hit = D.nodes.find(n => (n.name||'').includes(q) || n.id.toLowerCase() === q.toLowerCase() || (n.note||'').includes(q));
+  if (hit) { selected = hit.id; render(); focus(hit.id); }
+};
+
+function applyView(){ vp.setAttribute('transform', `translate(${view.x},${view.y}) scale(${view.k})`); }
+function focus(id){
+  const n = NMAP[id], r = svg.getBoundingClientRect();
+  view.k = 1.5; view.x = r.width/2 - n.x*view.k; view.y = r.height/2 - n.y*view.k; applyView();
+}
+
+// 渲染
+let nodeEls = {}, linkEls = [];
+function build(){
+  vp.innerHTML = ''; nodeEls = {}; linkEls = [];
+  LINKS.forEach((l, idx) => {
+    const a = NMAP[l.s], b = NMAP[l.t];
+    const p = el('path', {class:'link', 'data-i':idx, d:`M${a.x},${a.y} L${b.x},${b.y}`});
+    vp.appendChild(p); linkEls.push(p);
+  });
+  D.nodes.forEach(n => {
+    const g = el('g', {class:'node', 'data-id':n.id});
+    const r = Math.max(9, Math.min(22, 9 + n.deg * .85));
+    g.appendChild(el('circle', {r, fill:`var(--c-${n.label})`}));
+    const t = el('text', {y: r + 14}); t.textContent = n.name || n.id;
+    g.appendChild(t);
+    g.addEventListener('click', e => { e.stopPropagation(); selected = (selected === n.id) ? null : n.id; render(); });
+    g.addEventListener('mouseenter', () => { if(!active && !selected){ document.getElementById('tip').textContent = `${LABEL_ZH[n.label]}｜${n.name}（${n.note||'—'}）`; }});
+    vp.appendChild(g); nodeEls[n.id] = g;
+  });
+  place(); applyView();
+}
+function place(){
+  LINKS.forEach((l, idx) => {
+    const a = NMAP[l.s], b = NMAP[l.t];
+    linkEls[idx].setAttribute('d', `M${a.x},${a.y} L${b.x},${b.y}`);
+  });
+  D.nodes.forEach(n => {
+    const g = nodeEls[n.id]; if (!g) return;
+    const r = Math.max(9, Math.min(22, 9 + n.deg * .85));
+    g.setAttribute('transform', `translate(${n.x},${n.y})`);
+    g.querySelector('circle').setAttribute('r', r);
+    g.querySelector('text').setAttribute('y', r + 14);
+  });
+}
+function render(){
+  const keep = active ? new Set(active.nodes) : (selected ? near[selected] : null);
+  D.nodes.forEach(n => {
+    const g = nodeEls[n.id], r = Math.max(9, Math.min(22, 9 + n.deg * .85));
+    let show = !hidden.has(n.label);
+    let hl = keep ? keep.has(n.id) : false;
+    g.style.display = show ? '' : 'none';
+    g.classList.toggle('sel', selected === n.id);
+    g.classList.toggle('dim', !!keep && !hl);
+    g.querySelector('circle').setAttribute('r', selected === n.id ? r + 3 : r);
+  });
+  LINKS.forEach((l, idx) => {
+    const p = linkEls[idx];
+    const okRel = active ? active.rels.includes(l.type) : true;
+    const both = keep ? (keep.has(l.s) && keep.has(l.t)) : true;
+    const show = !hidden.has(NMAP[l.s].label) && !hidden.has(NMAP[l.t].label);
+    p.style.display = show ? '' : 'none';
+    p.classList.toggle('hl', !!keep && both && okRel);
+    p.classList.toggle('dim', !!keep && !(both && okRel));
+  });
+  detail();
+}
+function detail(){
+  const box = document.getElementById('detail');
+  if (!selected){ box.innerHTML = '<div class="hint">点左边图里的任意一个节点，这里会显示它的中文属性与直接关系。</div>'; return; }
+  const n = NMAP[selected];
+  const rows = [`<div><span class="badge" style="background:var(--c-${n.label})">${LABEL_ZH[n.label]}</span>
+                 <b style="margin-left:8px">${n.name}</b></div>`];
+  const kv = [['编号', n.id]];
+  if (n.note) kv.push(['说明', n.note]);
+  kv.push(['连接数', n.deg + ' 条']);
+  rows.push('<div class="kv">' + kv.map(([k,v]) => `<div class="k">${k}</div><div class="v">${v}</div>`).join('') + '</div>');
+  const rels = LINKS.filter(l => l.s === n.id || l.t === n.id).map(l => {
+    const other = l.s === n.id ? NMAP[l.t] : NMAP[l.s];
+    const dir = l.s === n.id ? '→' : '←';
+    const extra = Object.entries(l.props||{}).filter(([,v]) => v).map(([k,v]) => `${PROP_ZH[k]||k}：${v}`).join('，');
+    return `<div class="rel">${dir} <b>${REL_ZH[l.type]||l.type}</b> ${other.name}
+            <span style="color:var(--muted)">${extra ? '（'+extra+'）' : ''}</span></div>`;
+  }).join('');
+  rows.push('<h3 style="margin-top:12px">直接关系</h3>' + rels);
+  box.innerHTML = rows.join('');
+}
+
+document.getElementById('stats').innerHTML =
+  `<b>${D.nodes.length}</b> 个实体 · <b>${D.links.length}</b> 条关系 · <b>${Object.keys(labelCount).length}</b> 类对象 · <b>${Object.keys(REL_ZH).length}</b> 种关系`;
+build(); render();
+</script>
+</body>
+</html>

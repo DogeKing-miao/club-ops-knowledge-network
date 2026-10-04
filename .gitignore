@@ -1,0 +1,25 @@
+# ===== 生成脚本与历史版本（不进仓库）=====
+08-生成脚本/
+08-生成脚本（不用看）/
+09-历史版本/
+09-历史版本（已被替代）/
+
+# ===== Office / 系统临时文件 =====
+~$*
+*.tmp
+Thumbs.db
+desktop.ini
+
+# ===== Python 缓存 =====
+__pycache__/
+*.py[cod]
+
+# ===== 其他常见噪声 =====
+.DS_Store
+*.log
+*.zip
+*.rar
+*.7z
+.venv/
+venv/
+node_modules/
