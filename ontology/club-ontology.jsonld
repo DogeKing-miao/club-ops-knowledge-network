@@ -11,13 +11,13 @@
   "rdfs:label": { "zh": "校园社团运营知识网络本体", "en": "Campus Club Operations Knowledge Network Ontology" },
   "dsh:scenario": "校园社团运营（招新、活动、场地、成员、获奖）",
   "dsh:framework": "对象 · 属性 · 关系 · 动作（赛题要求的本体建模思路）",
-  "dsh:note": "示例本体，与 data 中的 34 个实体、73 条关系配套；学生姓名、社团名均为虚构示例。",
-  "dsh:statistics": { "objectClasses": 11, "relationTypes": 18, "objects": 34, "relations": 73, "queries": 9, "actions": 4 },
+  "dsh:note": "示例本体，与 data 中的 35 个实体、74 条关系配套；学生姓名、社团名均为虚构示例。（2026-10-07 补 C04 跑者联盟：34 实体 / 73 关系 → 35 实体 / 74 关系）",
+  "dsh:statistics": { "objectClasses": 11, "relationTypes": 18, "objects": 35, "relations": 74, "queries": 9, "actions": 4 },
 
   "dsh:objects": [
     { "@id": "dsh:Club", "@type": "owl:Class", "rdfs:label": { "zh": "社团" },
       "dsh:properties": ["clubId (xsd:string, 唯一)", "name (xsd:string)", "category (xsd:string)", "founded (xsd:date)"],
-      "dsh:instances": ["C01 星野天文社", "C02 青蓝辩论社", "C03 拾光摄影社"] },
+      "dsh:instances": ["C01 星野天文社", "C02 青蓝辩论社", "C03 拾光摄影社", "C04 跑者联盟"] },
     { "@id": "dsh:Student", "@type": "owl:Class", "rdfs:label": { "zh": "学生" },
       "dsh:properties": ["studentId (唯一)", "name", "grade", "major"],
       "dsh:instances": ["S001 林一舟", "S002 赵敏", "S003 陈嘉禾", "S004 王梓涵", "S005 李思远", "S006 周雨桐", "S007 吴桐", "S008 郑亦航"] },

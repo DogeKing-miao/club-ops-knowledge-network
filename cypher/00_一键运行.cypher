@@ -1,8 +1,11 @@
 // ============================================================
-// 社团运营知识网络 · 一键运行脚本（约束 + 34 实体 + 73 关系 + 自检）
+// 社团运营知识网络 · 一键运行脚本（约束 + 35 实体 + 74 关系 + 自检）
 // 用法：整段复制 → 粘进 Neo4j Browser 输入框 → Ctrl+Enter
 // 如果一次粘贴太卡，就按下面 4 段分开跑（每段以 ; 结尾）
 // 可重复执行，不会产生重复数据（MERGE + 唯一约束）
+// 共 54 条语句（原 53 条；本次 +1 条 = C04 的 TAGGED_WITH 关系）
+// 版本：2026-10-07 补 C04 跑者联盟（A04 夜跑打卡周 的 HOSTS 改挂 C04、C04 加长跑标签）
+//       已有旧库（34 实体 / 73 关系）的沙箱不必重跑本文件，跑 07_增量补C04.cypher 即可
 // ============================================================
 
 // ---------- 第 1 段：约束（11 个唯一约束）----------
@@ -18,11 +21,12 @@ CREATE CONSTRAINT noticeId_unique IF NOT EXISTS FOR (n:Notice) REQUIRE n.noticeI
 CREATE CONSTRAINT awardId_unique IF NOT EXISTS FOR (n:Award) REQUIRE n.awardId IS UNIQUE;
 CREATE CONSTRAINT termId_unique IF NOT EXISTS FOR (n:Term) REQUIRE n.termId IS UNIQUE;
 
-// ---------- 第 2 段：34 个实体 ----------
+// ---------- 第 2 段：35 个实体 ----------
 UNWIND [
   {id: 'C01', name: '星野天文社', attrs: '类别：学术科技；成立：2021-03-12；指导老师：郭明远'},
   {id: 'C02', name: '青蓝辩论社', attrs: '类别：人文社科；成立：2019-09-08；指导老师：沈一楠'},
-  {id: 'C03', name: '拾光摄影社', attrs: '类别：文化艺术；成立：2020-05-20；社长：吴桐'}
+  {id: 'C03', name: '拾光摄影社', attrs: '类别：文化艺术；成立：2020-05-20；社长：吴桐'},
+  {id: 'C04', name: '跑者联盟', attrs: '类别：体育健康；成立：2018-04-16；主办 A04 夜跑打卡周（成员未纳入本期 8 人样例）'}
 ] AS row
 MERGE (c:Club {clubId: row.id})
 SET c.clubId = row.id, c.name = row.name, c.note = row.attrs
@@ -110,11 +114,12 @@ SET m.termId = row.id, m.name = row.name, m.note = row.attrs
 
 MATCH (n) RETURN labels(n)[0] AS 类型, count(*) AS 数量 ORDER BY 数量 DESC;
 
-// ---------- 第 3 段：属性补全 + 73 条关系 ----------
+// ---------- 第 3 段：属性补全 + 74 条关系 ----------
 // ============================================================
 // 社团运营知识网络 · 03 属性补全 + 关系数据
 // 前置：先跑 01 约束与 02 实体（或直接跑 00_一键运行.cypher）
-// 共 73 条关系 / 19 种关系类型；可重复执行（MERGE）
+// 共 74 条关系 / 18 种关系类型；可重复执行（MERGE）
+// 版本：2026-10-07 补 C04 跑者联盟（HOSTS 改挂 C04 + C04 加长跑标签）
 // ============================================================
 
 // ---------- 第一步：把关键字段从 note 里提升为真正的属性 ----------
@@ -122,6 +127,8 @@ MATCH (n) RETURN labels(n)[0] AS 类型, count(*) AS 数量 ORDER BY 数量 DESC
 MATCH (c:Club {clubId:'C01'}) SET c.category='学术科技', c.founded=date('2021-03-12')
 MATCH (c:Club {clubId:'C02'}) SET c.category='人文社科', c.founded=date('2019-09-08')
 MATCH (c:Club {clubId:'C03'}) SET c.category='文化艺术', c.founded=date('2020-05-20')
+// MATCH …（2026-10-07 新增：C04 跑者联盟 的类别与成立时间）
+MATCH (c:Club {clubId:'C04'}) SET c.category='体育健康', c.founded=date('2018-04-16')
 
 // UNWIND …
 UNWIND [{id:'S001',grade:'2024',major:'天文学'},{id:'S002',grade:'2023',major:'物理学'},{id:'S003',grade:'2024',major:'新闻传播'},{id:'S004',grade:'2023',major:'计算机'},{id:'S005',grade:'2024',major:'哲学'},{id:'S006',grade:'2024',major:'汉语言文学'},{id:'S007',grade:'2023',major:'视觉传达'},{id:'S008',grade:'2024',major:'数学'}] AS row
@@ -177,12 +184,11 @@ MATCH (t:Teacher {teacherId:'T01'}), (c:Club {clubId:'C01'}) MERGE (t)-[:ADVISES
 MATCH (t:Teacher {teacherId:'T02'}), (c:Club {clubId:'C02'}) MERGE (t)-[:ADVISES]->(c);
 
 // ===== 社团举办活动 HOSTS（4） =====
-// 注意：A04 夜跑打卡周 在原实体清单里没有对应社团，这里临时挂在 C03 拾光摄影社
-// 若要严谨，可在实体清单补一个 C04 跑者联盟，再把这条改成 C04
+// A04 夜跑打卡周 由 C04 跑者联盟主办（2026-10-07 修正：原先缺社团节点，曾临时挂在 C03）
 MATCH (c:Club {clubId:'C01'}), (a:Activity {activityId:'A01'}) MERGE (c)-[:HOSTS]->(a);
 MATCH (c:Club {clubId:'C02'}), (a:Activity {activityId:'A02'}) MERGE (c)-[:HOSTS]->(a);
 MATCH (c:Club {clubId:'C03'}), (a:Activity {activityId:'A03'}) MERGE (c)-[:HOSTS]->(a);
-MATCH (c:Club {clubId:'C03'}), (a:Activity {activityId:'A04'}) MERGE (c)-[:HOSTS]->(a);
+MATCH (c:Club {clubId:'C04'}), (a:Activity {activityId:'A04'}) MERGE (c)-[:HOSTS]->(a);
 
 // ===== 活动场地 HELD_AT（4） =====
 // A01 与 A03 同一天、同一场地（东区操场）→ 演示 F8 场地冲突检测（钩子 H1）
@@ -232,10 +238,12 @@ UNWIND [
 MATCH (s:Student {studentId: row.s}), (g:InterestTag {tagId: row.g})
 MERGE (s)-[:HAS_TAG]->(g);
 
-// ===== 社团标签 TAGGED_WITH（3） =====
+// ===== 社团标签 TAGGED_WITH（4） =====
+// 每个社团挂一个标签：C01→G01、C02→G03、C03→G02、C04→G04 长跑（本次新增）
 MATCH (c:Club {clubId:'C01'}), (g:InterestTag {tagId:'G01'}) MERGE (c)-[:TAGGED_WITH]->(g);
 MATCH (c:Club {clubId:'C02'}), (g:InterestTag {tagId:'G03'}) MERGE (c)-[:TAGGED_WITH]->(g);
 MATCH (c:Club {clubId:'C03'}), (g:InterestTag {tagId:'G02'}) MERGE (c)-[:TAGGED_WITH]->(g);
+MATCH (c:Club {clubId:'C04'}), (g:InterestTag {tagId:'G04'}) MERGE (c)-[:TAGGED_WITH]->(g);
 
 // ===== 招新报名 APPLIED_TO + FOR_CLUB（5） =====
 // S005、S006 报了 R01 但尚未入社 → 演示 F9 招新转化（钩子 H2）
@@ -271,7 +279,7 @@ MATCH (a:Activity {activityId: aid}), (m:Term {termId:'M01'})
 MERGE (a)-[:IN_TERM]->(m);
 
 // ---------- 第 4 段：自检（截图留档）----------
-MATCH (n) RETURN count(n) AS 实体总数;               // 34
-MATCH ()-[r]->() RETURN count(r) AS 关系总数;        // 73
+MATCH (n) RETURN count(n) AS 实体总数;               // 35
+MATCH ()-[r]->() RETURN count(r) AS 关系总数;        // 74
 MATCH (n) RETURN labels(n)[0] AS 类型, count(*) AS 数量 ORDER BY 数量 DESC;
 MATCH ()-[r]->() RETURN type(r) AS 关系类型, count(*) AS 条数 ORDER BY 条数 DESC;

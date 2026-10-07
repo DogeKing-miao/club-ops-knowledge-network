@@ -78,6 +78,6 @@ RETURN s.name AS 学生, 社团列表, 社团数, '注意活动时间冲突' AS 
 ORDER BY 社团数 DESC;
 
 // ---------- 通用自检（截图留档用）----------
-MATCH (n) RETURN count(n) AS 实体总数;                 // 应为 34
-MATCH ()-[r]->() RETURN count(r) AS 关系总数;           // 应为 73
+MATCH (n) RETURN count(n) AS 实体总数;                 // 应为 35（2026-10-07 补 C04 跑者联盟后：34 → 35）
+MATCH ()-[r]->() RETURN count(r) AS 关系总数;           // 应为 74（原 73；C04→A04 改挂不增不减，C04→G04 新增 1 条）
 MATCH (n) RETURN labels(n)[0] AS 类型, count(*) AS 数量 ORDER BY 数量 DESC;

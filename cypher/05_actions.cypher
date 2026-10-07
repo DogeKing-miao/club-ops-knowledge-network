@@ -28,7 +28,7 @@ MATCH (s:Student)-[m:MEMBER_OF]->(c:Club {clubId:'C01'})
 WHERE m.status = '在册'
 RETURN c.name AS 社团, count(s) AS 在册成员数;
 
-// ---- 重置动作一（想再演示一次、或想让关系数从 75 回到 73 时，跑这两句）----
+// ---- 重置动作一（想再演示一次、或想让关系数从 76 回到 74 时，跑这两句）----
 MATCH (s:Student {studentId:'S005'})-[m:MEMBER_OF]->(c:Club {clubId:'C01'})
 DELETE m;
 
