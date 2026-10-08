@@ -7,6 +7,7 @@
 // 版本：2026-10-07 补 C04 跑者联盟（A04 夜跑打卡周 的 HOSTS 改挂 C04、C04 加长跑标签）
 //       已有旧库（34 实体 / 73 关系）的沙箱不必重跑本文件，跑 07_增量补C04.cypher 即可
 //       2026-10-08 修复 CYPHER 25 报错：同一条语句里重复声明变量 row（第 2 段 11 处、第 3 段 6 处），后续块别名改为 row2…row11 / row2…row6，只改别名，数据不变
+//       2026-10-08 二次修复（同一类）：同一语句里 m 先当 Term 节点变量、又当 MEMBER_OF 关系变量，CYPHER 25 报 Variable 'm' already declared → Term 变量改名 term
 // ============================================================
 
 // ---------- 第 1 段：约束（11 个唯一约束）----------
@@ -152,7 +153,7 @@ UNWIND [{id:'W01',y:2025},{id:'W02',y:2025}] AS row5
 MATCH (w:Award {awardId: row5.id}) SET w.year = row5.y
 
 // MATCH …
-MATCH (m:Term {termId:'M01'}) SET m.startDate = date('2025-09-01'), m.endDate = date('2026-01-15')
+MATCH (term:Term {termId:'M01'}) SET term.startDate = date('2025-09-01'), term.endDate = date('2026-01-15')
 
 // ---------- 第二步：关系数据 ----------
 // ===== 成员关系 MEMBER_OF（7） =====

@@ -6,6 +6,7 @@
 //       并给 C04 补 TAGGED_WITH → G04 长跑（原 73 条 → 74 条）
 //       已有旧库的沙箱直接跑 07_增量补C04.cypher，不用重跑本文件
 //       2026-10-08 修复 CYPHER 25 报错：同一条语句里重复声明变量 row，后续块别名改为 row2…row6，数据不变
+//       2026-10-08 二次修复（同一类）：同一语句里 m 先当 Term 节点变量、又当 MEMBER_OF 关系变量，CYPHER 25 报 Variable 'm' already declared → Term 变量改名 term
 // ============================================================
 
 // ---------- 第一步：把关键字段从 note 里提升为真正的属性 ----------
@@ -37,7 +38,7 @@ UNWIND [{id:'W01',y:2025},{id:'W02',y:2025}] AS row5
 MATCH (w:Award {awardId: row5.id}) SET w.year = row5.y
 
 // MATCH …
-MATCH (m:Term {termId:'M01'}) SET m.startDate = date('2025-09-01'), m.endDate = date('2026-01-15')
+MATCH (term:Term {termId:'M01'}) SET term.startDate = date('2025-09-01'), term.endDate = date('2026-01-15')
 
 // ---------- 第二步：关系数据 ----------
 // ===== 成员关系 MEMBER_OF（7） =====
