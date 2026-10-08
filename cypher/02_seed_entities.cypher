@@ -5,6 +5,7 @@
 // 自检：MATCH (n) RETURN count(n);   // 应为 35
 // 版本：2026-10-07 补 C04 跑者联盟（原先 A04 夜跑打卡周没有归属社团）
 //       已有 34 个实体的沙箱不用重跑本文件，直接跑 07_增量补C04.cypher 即可
+//       2026-10-08 修复 CYPHER 25 报错：同一条语句里重复声明变量 row，后续块别名改为 row2…row11，数据不变
 // ============================================================
 
 // ---------- 社团 Club（4）----------
@@ -27,26 +28,26 @@ UNWIND [
   {id: 'S006', name: '周雨桐', attrs: '2024 级 · 汉语言文学 · 报名天文社招新但未转正'},
   {id: 'S007', name: '吴桐', attrs: '2023 级 · 视觉传达 · 拾光摄影社社长'},
   {id: 'S008', name: '郑亦航', attrs: '2024 级 · 数学 · 已退出天文社（退出样例）'}
-] AS row
-MERGE (s:Student {studentId: row.id})
-SET s.studentId = row.id, s.name = row.name, s.note = row.attrs
+] AS row2
+MERGE (s:Student {studentId: row2.id})
+SET s.studentId = row2.id, s.name = row2.name, s.note = row2.attrs
 
 // ---------- 部门 Department（3）----------
 UNWIND [
   {id: 'D01', name: '观测部', attrs: '归属：星野天文社；职能：活动观测执行'},
   {id: 'D02', name: '宣传部', attrs: '归属：星野天文社；职能：海报与推文'},
   {id: 'D03', name: '赛事部', attrs: '归属：青蓝辩论社；职能：赛事组织'}
-] AS row
-MERGE (d:Department {deptId: row.id})
-SET d.deptId = row.id, d.name = row.name, d.note = row.attrs
+] AS row3
+MERGE (d:Department {deptId: row3.id})
+SET d.deptId = row3.id, d.name = row3.name, d.note = row3.attrs
 
 // ---------- 指导老师 Teacher（2）----------
 UNWIND [
   {id: 'T01', name: '郭明远', attrs: '天文系；指导星野天文社'},
   {id: 'T02', name: '沈一楠', attrs: '哲学系；指导青蓝辩论社'}
-] AS row
-MERGE (t:Teacher {teacherId: row.id})
-SET t.teacherId = row.id, t.name = row.name, t.note = row.attrs
+] AS row4
+MERGE (t:Teacher {teacherId: row4.id})
+SET t.teacherId = row4.id, t.name = row4.name, t.note = row4.attrs
 
 // ---------- 活动 Activity（4）----------
 UNWIND [
@@ -54,18 +55,18 @@ UNWIND [
   {id: 'A02', name: '新生辩论赛', attrs: '2025-10-25 · 图书馆报告厅 · 名额 32 · 已报名 3 人'},
   {id: 'A03', name: '校园人像外拍', attrs: '2025-10-18 · 东区操场（与 A01 同日同场地 → 冲突样例）'},
   {id: 'A04', name: '夜跑打卡周', attrs: '2025-11-10 · 东区操场 · 名额 60 · 已报名 3 人'}
-] AS row
-MERGE (a:Activity {activityId: row.id})
-SET a.activityId = row.id, a.name = row.name, a.note = row.attrs
+] AS row5
+MERGE (a:Activity {activityId: row5.id})
+SET a.activityId = row5.id, a.name = row5.name, a.note = row5.attrs
 
 // ---------- 场地 Venue（3）----------
 UNWIND [
   {id: 'V01', name: '东区操场', attrs: '容量 200 · 东区'},
   {id: 'V02', name: '学生活动中心 302', attrs: '容量 40 · 学生活动中心'},
   {id: 'V03', name: '图书馆报告厅', attrs: '容量 120 · 图书馆'}
-] AS row
-MERGE (v:Venue {venueId: row.id})
-SET v.venueId = row.id, v.name = row.name, v.note = row.attrs
+] AS row6
+MERGE (v:Venue {venueId: row6.id})
+SET v.venueId = row6.id, v.name = row6.name, v.note = row6.attrs
 
 // ---------- 兴趣标签 InterestTag（4）----------
 UNWIND [
@@ -73,41 +74,41 @@ UNWIND [
   {id: 'G02', name: '摄影', attrs: '用于兴趣匹配与社团标签'},
   {id: 'G03', name: '辩论', attrs: '用于兴趣匹配与社团标签'},
   {id: 'G04', name: '长跑', attrs: '用于兴趣匹配与社团标签'}
-] AS row
-MERGE (g:InterestTag {tagId: row.id})
-SET g.tagId = row.id, g.name = row.name, g.note = row.attrs
+] AS row7
+MERGE (g:InterestTag {tagId: row7.id})
+SET g.tagId = row7.id, g.name = row7.name, g.note = row7.attrs
 
 // ---------- 招新计划 Recruitment（2）----------
 UNWIND [
   {id: 'R01', name: '星野天文社 2025 秋季招新', attrs: '名额 15 · 状态：进行中 · 2 人已报名未转正'},
   {id: 'R02', name: '拾光摄影社 2025 秋季招新', attrs: '名额 10 · 状态：进行中'}
-] AS row
-MERGE (r:Recruitment {recruitId: row.id})
-SET r.recruitId = row.id, r.name = row.name, r.note = row.attrs
+] AS row8
+MERGE (r:Recruitment {recruitId: row8.id})
+SET r.recruitId = row8.id, r.name = row8.name, r.note = row8.attrs
 
 // ---------- 通知 Notice（2）----------
 UNWIND [
   {id: 'N01', name: '秋季观星夜开始报名', attrs: '2025-10-08 发布 · 关联活动 A01'},
   {id: 'N02', name: '校园人像外拍开始报名', attrs: '2025-10-08 发布 · 关联活动 A03'}
-] AS row
-MERGE (n:Notice {noticeId: row.id})
-SET n.noticeId = row.id, n.title = row.name, n.note = row.attrs
+] AS row9
+MERGE (n:Notice {noticeId: row9.id})
+SET n.noticeId = row9.id, n.title = row9.name, n.note = row9.attrs
 
 // ---------- 获奖 Award（2）----------
 UNWIND [
   {id: 'W01', name: '省级天文知识竞赛 二等奖', attrs: '2025 年 · 归属星野天文社'},
   {id: 'W02', name: '校级辩论赛 冠军', attrs: '2025 年 · 归属青蓝辩论社'}
-] AS row
-MERGE (w:Award {awardId: row.id})
-SET w.awardId = row.id, w.name = row.name, w.note = row.attrs
+] AS row10
+MERGE (w:Award {awardId: row10.id})
+SET w.awardId = row10.id, w.name = row10.name, w.note = row10.attrs
 
 // ---------- 学期 Term（1）----------
 UNWIND [
   {id: 'M01', name: '2025 秋季学期', attrs: '2025-09-01 至 2026-01-15（活动与统计的时间基准）'}
-] AS row
-MERGE (m:Term {termId: row.id})
-SET m.termId = row.id, m.name = row.name, m.note = row.attrs
+] AS row11
+MERGE (m:Term {termId: row11.id})
+SET m.termId = row11.id, m.name = row11.name, m.note = row11.attrs
 
 // ---------- 自检 ----------
-MATCH (n) RETURN count(n) AS 实体总数;   // 应为 35（社团 4 / 学生 8 / 部门 3 / 老师 2 / 活动 4 / 场地 3 / 兴趣标签 4 / 招新 2 / 通知 2 / 获奖 2 / 学期 1）
+MATCH (n) RETURN count(DISTINCT n) AS 实体总数;   // 应为 35（社团 4 / 学生 8 / 部门 3 / 老师 2 / 活动 4 / 场地 3 / 兴趣标签 4 / 招新 2 / 通知 2 / 获奖 2 / 学期 1）
 MATCH (n) RETURN labels(n)[0] AS 类型, count(*) AS 数量 ORDER BY 数量 DESC;

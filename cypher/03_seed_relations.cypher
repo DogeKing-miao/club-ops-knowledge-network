@@ -5,6 +5,7 @@
 // 版本：2026-10-07 补 C04 跑者联盟 —— A04 夜跑打卡周 的 HOSTS 由 C03 改挂 C04，
 //       并给 C04 补 TAGGED_WITH → G04 长跑（原 73 条 → 74 条）
 //       已有旧库的沙箱直接跑 07_增量补C04.cypher，不用重跑本文件
+//       2026-10-08 修复 CYPHER 25 报错：同一条语句里重复声明变量 row，后续块别名改为 row2…row6，数据不变
 // ============================================================
 
 // ---------- 第一步：把关键字段从 note 里提升为真正的属性 ----------
@@ -20,20 +21,20 @@ UNWIND [{id:'S001',grade:'2024',major:'天文学'},{id:'S002',grade:'2023',major
 MATCH (s:Student {studentId: row.id}) SET s.grade = row.grade, s.major = row.major
 
 // UNWIND …
-UNWIND [{id:'A01',d:'2025-10-18',cap:40,rem:36,st:'报名中'},{id:'A02',d:'2025-10-25',cap:32,rem:29,st:'报名中'},{id:'A03',d:'2025-10-18',cap:20,rem:18,st:'报名中'},{id:'A04',d:'2025-11-10',cap:60,rem:57,st:'报名中'}] AS row
-MATCH (a:Activity {activityId: row.id}) SET a.date = date(row.d), a.capacity = row.cap, a.remaining = row.rem, a.status = row.st
+UNWIND [{id:'A01',d:'2025-10-18',cap:40,rem:36,st:'报名中'},{id:'A02',d:'2025-10-25',cap:32,rem:29,st:'报名中'},{id:'A03',d:'2025-10-18',cap:20,rem:18,st:'报名中'},{id:'A04',d:'2025-11-10',cap:60,rem:57,st:'报名中'}] AS row2
+MATCH (a:Activity {activityId: row2.id}) SET a.date = date(row2.d), a.capacity = row2.cap, a.remaining = row2.rem, a.status = row2.st
 
 // UNWIND …
-UNWIND [{id:'V01',cap:200},{id:'V02',cap:40},{id:'V03',cap:120}] AS row
-MATCH (v:Venue {venueId: row.id}) SET v.capacity = row.cap
+UNWIND [{id:'V01',cap:200},{id:'V02',cap:40},{id:'V03',cap:120}] AS row3
+MATCH (v:Venue {venueId: row3.id}) SET v.capacity = row3.cap
 
 // UNWIND …
-UNWIND [{id:'R01',q:15,st:'进行中'},{id:'R02',q:10,st:'进行中'}] AS row
-MATCH (r:Recruitment {recruitId: row.id}) SET r.quota = row.q, r.status = row.st
+UNWIND [{id:'R01',q:15,st:'进行中'},{id:'R02',q:10,st:'进行中'}] AS row4
+MATCH (r:Recruitment {recruitId: row4.id}) SET r.quota = row4.q, r.status = row4.st
 
 // UNWIND …
-UNWIND [{id:'W01',y:2025},{id:'W02',y:2025}] AS row
-MATCH (w:Award {awardId: row.id}) SET w.year = row.y
+UNWIND [{id:'W01',y:2025},{id:'W02',y:2025}] AS row5
+MATCH (w:Award {awardId: row5.id}) SET w.year = row5.y
 
 // MATCH …
 MATCH (m:Term {termId:'M01'}) SET m.startDate = date('2025-09-01'), m.endDate = date('2026-01-15')
@@ -51,11 +52,11 @@ UNWIND [
   {s:'S004', c:'C03', role:'成员',   join:'2023-10-11', st:'在册', quit:null},
   {s:'S007', c:'C03', role:'社长',   join:'2023-09-05', st:'在册', quit:null},
   {s:'S008', c:'C01', role:'成员',   join:'2024-09-20', st:'已退出', quit:'2025-11-20'}
-] AS row
-MATCH (s:Student {studentId: row.s}), (c:Club {clubId: row.c})
+] AS row6
+MATCH (s:Student {studentId: row6.s}), (c:Club {clubId: row6.c})
 MERGE (s)-[m:MEMBER_OF]->(c)
-SET m.role = row.role, m.joinDate = date(row.join), m.status = row.st
-FOREACH (_ IN CASE WHEN row.quit IS NULL THEN [] ELSE [1] END | SET m.quitDate = date(row.quit));
+SET m.role = row6.role, m.joinDate = date(row6.join), m.status = row6.st
+FOREACH (_ IN CASE WHEN row6.quit IS NULL THEN [] ELSE [1] END | SET m.quitDate = date(row6.quit));
 
 // ===== 部门归属 IN_DEPARTMENT / BELONGS_TO（4） =====
 // 学生 -[:IN_DEPARTMENT]-> 部门；部门 -[:BELONGS_TO]-> 社团
