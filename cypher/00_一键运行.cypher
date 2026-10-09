@@ -3,11 +3,12 @@
 // 用法：整段复制 → 粘进 Neo4j Browser 输入框 → Ctrl+Enter
 // 如果一次粘贴太卡，就按下面 4 段分开跑（每段以 ; 结尾）
 // 可重复执行，不会产生重复数据（MERGE + 唯一约束）
-// 共 54 条语句（原 53 条；本次 +1 条 = C04 的 TAGGED_WITH 关系）
+// 共 63 条可执行语句（11 约束 + 1 条实体 + 10 条属性 + 37 条关系 + 4 条自检）
 // 版本：2026-10-07 补 C04 跑者联盟（A04 夜跑打卡周 的 HOSTS 改挂 C04、C04 加长跑标签）
-//       已有旧库（34 实体 / 73 关系）的沙箱不必重跑本文件，跑 07_增量补C04.cypher 即可
+//       若想在旧库上重建：沙箱本就约 3 天过期，直接新建一个空白沙箱、整段重跑本文件最省事
 //       2026-10-08 修复 CYPHER 25 报错：同一条语句里重复声明变量 row（第 2 段 11 处、第 3 段 6 处），后续块别名改为 row2…row11 / row2…row6，只改别名，数据不变
 //       2026-10-08 二次修复（同一类）：同一语句里 m 先当 Term 节点变量、又当 MEMBER_OF 关系变量，CYPHER 25 报 Variable 'm' already declared → Term 变量改名 term
+//       2026-10-08 三次修复（重要）：属性提升段与 MEMBER_OF 段共 10 条语句漏写分号，整段被并成一条语句、在 CYPHER 25 下静默失效（库里只有 67 条关系）→ 已逐条补上 ;
 // ============================================================
 
 // ---------- 第 1 段：约束（11 个唯一约束）----------
@@ -126,34 +127,34 @@ MATCH (n) RETURN labels(n)[0] AS 类型, count(DISTINCT n) AS 数量 ORDER BY �
 
 // ---------- 第一步：把关键字段从 note 里提升为真正的属性 ----------
 // MATCH …
-MATCH (c:Club {clubId:'C01'}) SET c.category='学术科技', c.founded=date('2021-03-12')
-MATCH (c:Club {clubId:'C02'}) SET c.category='人文社科', c.founded=date('2019-09-08')
-MATCH (c:Club {clubId:'C03'}) SET c.category='文化艺术', c.founded=date('2020-05-20')
+MATCH (c:Club {clubId:'C01'}) SET c.category='学术科技', c.founded=date('2021-03-12');
+MATCH (c:Club {clubId:'C02'}) SET c.category='人文社科', c.founded=date('2019-09-08');
+MATCH (c:Club {clubId:'C03'}) SET c.category='文化艺术', c.founded=date('2020-05-20');
 // MATCH …（2026-10-07 新增：C04 跑者联盟 的类别与成立时间）
-MATCH (c:Club {clubId:'C04'}) SET c.category='体育健康', c.founded=date('2018-04-16')
+MATCH (c:Club {clubId:'C04'}) SET c.category='体育健康', c.founded=date('2018-04-16');
 
 // UNWIND …
 UNWIND [{id:'S001',grade:'2024',major:'天文学'},{id:'S002',grade:'2023',major:'物理学'},{id:'S003',grade:'2024',major:'新闻传播'},{id:'S004',grade:'2023',major:'计算机'},{id:'S005',grade:'2024',major:'哲学'},{id:'S006',grade:'2024',major:'汉语言文学'},{id:'S007',grade:'2023',major:'视觉传达'},{id:'S008',grade:'2024',major:'数学'}] AS row
-MATCH (s:Student {studentId: row.id}) SET s.grade = row.grade, s.major = row.major
+MATCH (s:Student {studentId: row.id}) SET s.grade = row.grade, s.major = row.major;
 
 // UNWIND …
 UNWIND [{id:'A01',d:'2025-10-18',cap:40,rem:36,st:'报名中'},{id:'A02',d:'2025-10-25',cap:32,rem:29,st:'报名中'},{id:'A03',d:'2025-10-18',cap:20,rem:18,st:'报名中'},{id:'A04',d:'2025-11-10',cap:60,rem:57,st:'报名中'}] AS row2
-MATCH (a:Activity {activityId: row2.id}) SET a.date = date(row2.d), a.capacity = row2.cap, a.remaining = row2.rem, a.status = row2.st
+MATCH (a:Activity {activityId: row2.id}) SET a.date = date(row2.d), a.capacity = row2.cap, a.remaining = row2.rem, a.status = row2.st;
 
 // UNWIND …
 UNWIND [{id:'V01',cap:200},{id:'V02',cap:40},{id:'V03',cap:120}] AS row3
-MATCH (v:Venue {venueId: row3.id}) SET v.capacity = row3.cap
+MATCH (v:Venue {venueId: row3.id}) SET v.capacity = row3.cap;
 
 // UNWIND …
 UNWIND [{id:'R01',q:15,st:'进行中'},{id:'R02',q:10,st:'进行中'}] AS row4
-MATCH (r:Recruitment {recruitId: row4.id}) SET r.quota = row4.q, r.status = row4.st
+MATCH (r:Recruitment {recruitId: row4.id}) SET r.quota = row4.q, r.status = row4.st;
 
 // UNWIND …
 UNWIND [{id:'W01',y:2025},{id:'W02',y:2025}] AS row5
-MATCH (w:Award {awardId: row5.id}) SET w.year = row5.y
+MATCH (w:Award {awardId: row5.id}) SET w.year = row5.y;
 
 // MATCH …
-MATCH (term:Term {termId:'M01'}) SET term.startDate = date('2025-09-01'), term.endDate = date('2026-01-15')
+MATCH (term:Term {termId:'M01'}) SET term.startDate = date('2025-09-01'), term.endDate = date('2026-01-15');
 
 // ---------- 第二步：关系数据 ----------
 // ===== 成员关系 MEMBER_OF（7） =====
