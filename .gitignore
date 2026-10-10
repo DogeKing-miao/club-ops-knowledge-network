@@ -23,3 +23,6 @@ __pycache__/
 .venv/
 venv/
 node_modules/
+
+# 本地便利脚本（不进仓库）
+一键上传到GitHub.bat
