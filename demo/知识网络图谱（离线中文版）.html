@@ -69,6 +69,18 @@
   .rel b{color:var(--ink);font-weight:600}
   .badge{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:99px;color:#fff}
   .hint{font-size:11.5px;color:var(--muted);line-height:1.7}
+  .card{border:1px solid var(--rule);border-radius:10px;padding:10px;margin-bottom:10px}
+  .card h4{margin:0 0 3px;font-size:12.5px;color:var(--ink)}
+  .card h4 .src{font-weight:400;color:var(--muted)}
+  table{width:100%;border-collapse:collapse;font-size:11.5px;margin:2px 0 4px}
+  th,td{padding:4px 5px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+  th{color:var(--muted);font-weight:400;background:var(--bg);white-space:nowrap}
+  tr.hl td{background:#fdf0e4}
+  body.dark tr.hl td{background:#33220f}
+  .actbtn{display:block;width:100%;text-align:left;margin-bottom:5px;padding:6px 9px;
+          border-color:#d9b38c;color:#8a5220;line-height:1.3}
+  body.dark .actbtn{border-color:#6b4a24;color:#f0b070}
+  .actbtn:hover,.actbtn.on{background:#c05621;border-color:#c05621;color:#fff}
 </style>
 </head>
 <body>
@@ -82,7 +94,10 @@
 
 <div class="wrap">
   <div class="side">
-    <h3>节点类型（点击可隐藏/显示）</h3>
+    <h3>业务动作（点一下改数据）</h3>
+    <div id="alist"></div>
+    <button id="areset" style="width:100%;margin-top:5px">↺ 重置回初始状态</button>
+    <h3 style="margin-top:14px">节点类型（点击可隐藏/显示）</h3>
     <div class="legend" id="legend"></div>
     <h3 style="margin-top:14px">搜索</h3>
     <input id="search" placeholder="输入姓名 / 社团 / 活动…">
@@ -91,7 +106,8 @@
       · 滚轮缩放，空白处拖动平移<br>
       · 拖节点可挪位置<br>
       · 点节点看右侧详情<br>
-      · 底部按钮=按功能高亮子图
+      · 底部按钮 = 按功能高亮子图<br>
+      · <b>左侧业务动作 = 真的改数据</b>
     </div>
   </div>
 
@@ -109,6 +125,120 @@
 
 <script>
 const D = {"nodes": [{"id": "C01", "label": "Club", "name": "星野天文社", "note": "类别：学术科技；成立：2021-03-12；指导老师：郭明远", "x": 284.5, "y": 189.3, "deg": 12}, {"id": "C02", "label": "Club", "name": "青蓝辩论社", "note": "类别：人文社科；成立：2019-09-08；指导老师：沈一楠", "x": 919.9, "y": 675, "deg": 5}, {"id": "C03", "label": "Club", "name": "拾光摄影社", "note": "类别：文化艺术；成立：2020-05-20；社长：吴桐", "x": 867.2, "y": 45, "deg": 7}, {"id": "S001", "label": "Student", "name": "林一舟", "note": "2024 级 · 天文学 · 星野天文社社长", "x": 164.9, "y": 219.2, "deg": 6}, {"id": "S002", "label": "Student", "name": "赵敏", "note": "2023 级 · 物理学 · 观测部部长", "x": 500.0, "y": 191.2, "deg": 6}, {"id": "S003", "label": "Student", "name": "陈嘉禾", "note": "2024 级 · 新闻传播 · 同时在两个社团（跨社团样例）", "x": 448.9, "y": 45, "deg": 4}, {"id": "S004", "label": "Student", "name": "王梓涵", "note": "2023 级 · 计算机 · 摄影社成员 · 多场活动报名", "x": 803.4, "y": 45, "deg": 8}, {"id": "S005", "label": "Student", "name": "李思远", "note": "2024 级 · 哲学 · 报名天文社招新但未转正 · 兴趣含天文观测", "x": 380.9, "y": 675, "deg": 5}, {"id": "S006", "label": "Student", "name": "周雨桐", "note": "2024 级 · 汉语言文学 · 报名天文社招新但未转正", "x": 530.0, "y": 675, "deg": 6}, {"id": "S007", "label": "Student", "name": "吴桐", "note": "2023 级 · 视觉传达 · 拾光摄影社社长", "x": 775.0, "y": 263.4, "deg": 7}, {"id": "S008", "label": "Student", "name": "郑亦航", "note": "2024 级 · 数学 · 已退出天文社（退出样例）", "x": 725.3, "y": 45, "deg": 3}, {"id": "D01", "label": "Department", "name": "观测部", "note": "归属：星野天文社；职能：活动观测执行", "x": 614.3, "y": 45, "deg": 2}, {"id": "D02", "label": "Department", "name": "宣传部", "note": "归属：星野天文社；职能：海报与推文", "x": 45, "y": 45, "deg": 1}, {"id": "D03", "label": "Department", "name": "赛事部", "note": "归属：青蓝辩论社；职能：赛事组织", "x": 800.0, "y": 675, "deg": 1}, {"id": "T01", "label": "Teacher", "name": "郭明远", "note": "天文系；指导星野天文社", "x": 45, "y": 80.8, "deg": 1}, {"id": "T02", "label": "Teacher", "name": "沈一楠", "note": "哲学系；指导青蓝辩论社", "x": 1135, "y": 627.7, "deg": 1}, {"id": "A01", "label": "Activity", "name": "秋季观星夜", "note": "2025-10-18 · 东区操场 · 名额 40 · 已报名 4 人 / 签到 2 人", "x": 365.7, "y": 134.1, "deg": 11}, {"id": "A02", "label": "Activity", "name": "新生辩论赛", "note": "2025-10-25 · 图书馆报告厅 · 名额 32 · 已报名 3 人", "x": 550.7, "y": 581.4, "deg": 9}, {"id": "A03", "label": "Activity", "name": "校园人像外拍", "note": "2025-10-18 · 东区操场（与 A01 同日同场地 → 冲突样例）", "x": 868.6, "y": 164.7, "deg": 9}, {"id": "A04", "label": "Activity", "name": "夜跑打卡周", "note": "2025-11-10 · 东区操场 · 名额 60 · 已报名 3 人", "x": 690.1, "y": 45, "deg": 6}, {"id": "V01", "label": "Venue", "name": "东区操场", "note": "容量 200 · 东区", "x": 528.0, "y": 45, "deg": 3}, {"id": "V02", "label": "Venue", "name": "学生活动中心 302", "note": "容量 40 · 学生活动中心", "x": 1135, "y": 675, "deg": 0}, {"id": "V03", "label": "Venue", "name": "图书馆报告厅", "note": "容量 120 · 图书馆", "x": 152.0, "y": 675, "deg": 1}, {"id": "G01", "label": "InterestTag", "name": "天文观测", "note": "用于兴趣匹配与社团标签", "x": 252.4, "y": 404.3, "deg": 4}, {"id": "G02", "label": "InterestTag", "name": "摄影", "note": "用于兴趣匹配与社团标签", "x": 589.2, "y": 45, "deg": 4}, {"id": "G03", "label": "InterestTag", "name": "辩论", "note": "用于兴趣匹配与社团标签", "x": 656.9, "y": 675, "deg": 3}, {"id": "G04", "label": "InterestTag", "name": "长跑", "note": "用于兴趣匹配与社团标签", "x": 929.6, "y": 45, "deg": 4}, {"id": "R01", "label": "Recruitment", "name": "星野天文社 2025 秋季招新", "note": "名额 15 · 状态：进行中 · 2 人已报名未转正", "x": 252.9, "y": 580.6, "deg": 3}, {"id": "R02", "label": "Recruitment", "name": "拾光摄影社 2025 秋季招新", "note": "名额 10 · 状态：进行中", "x": 1135, "y": 96.6, "deg": 2}, {"id": "N01", "label": "Notice", "name": "秋季观星夜开始报名", "note": "2025-10-08 发布 · 关联活动 A01", "x": 45, "y": 165.7, "deg": 2}, {"id": "N02", "label": "Notice", "name": "校园人像外拍开始报名", "note": "2025-10-08 发布 · 关联活动 A03", "x": 1135, "y": 45, "deg": 2}, {"id": "W01", "label": "Award", "name": "省级天文知识竞赛 二等奖", "note": "2025 年 · 归属星野天文社", "x": 45, "y": 347.7, "deg": 2}, {"id": "W02", "label": "Award", "name": "校级辩论赛 冠军", "note": "2025 年 · 归属青蓝辩论社", "x": 854.8, "y": 675, "deg": 2}, {"id": "M01", "label": "Term", "name": "2025 秋季学期", "note": "2025-09-01 至 2026-01-15（活动与统计的时间基准）", "x": 624.2, "y": 306.2, "deg": 4}, {"id": "C04", "label": "Club", "name": "跑者联盟", "note": "类别：体育健康；成立：2018-04-16；主办 A04 夜跑打卡周（成员未纳入本期 8 人样例）", "x": 720, "y": 160, "deg": 2}], "links": [{"s": "S001", "t": "C01", "type": "MEMBER_OF", "props": {"role": "社长", "joinDate": "2024-09-10", "status": "在册"}}, {"s": "S002", "t": "C01", "type": "MEMBER_OF", "props": {"role": "观测部部长", "joinDate": "2024-09-12", "status": "在册"}}, {"s": "S003", "t": "C01", "type": "MEMBER_OF", "props": {"role": "成员", "joinDate": "2024-10-08", "status": "在册"}}, {"s": "S003", "t": "C03", "type": "MEMBER_OF", "props": {"role": "成员", "joinDate": "2025-03-02", "status": "在册"}}, {"s": "S004", "t": "C03", "type": "MEMBER_OF", "props": {"role": "成员", "joinDate": "2023-10-11", "status": "在册"}}, {"s": "S007", "t": "C03", "type": "MEMBER_OF", "props": {"role": "社长", "joinDate": "2023-09-05", "status": "在册"}}, {"s": "S008", "t": "C01", "type": "MEMBER_OF", "props": {"role": "成员", "joinDate": "2024-09-20", "status": "已退出", "quitDate": "2025-11-20"}}, {"s": "S002", "t": "D01", "type": "IN_DEPARTMENT", "props": {}}, {"s": "D01", "t": "C01", "type": "BELONGS_TO", "props": {}}, {"s": "D02", "t": "C01", "type": "BELONGS_TO", "props": {}}, {"s": "D03", "t": "C02", "type": "BELONGS_TO", "props": {}}, {"s": "T01", "t": "C01", "type": "ADVISES", "props": {}}, {"s": "T02", "t": "C02", "type": "ADVISES", "props": {}}, {"s": "C01", "t": "A01", "type": "HOSTS", "props": {}}, {"s": "C02", "t": "A02", "type": "HOSTS", "props": {}}, {"s": "C03", "t": "A03", "type": "HOSTS", "props": {}}, {"s": "C04", "t": "A04", "type": "HOSTS", "props": {}}, {"s": "A01", "t": "V01", "type": "HELD_AT", "props": {}}, {"s": "A02", "t": "V03", "type": "HELD_AT", "props": {}}, {"s": "A03", "t": "V01", "type": "HELD_AT", "props": {}}, {"s": "A04", "t": "V01", "type": "HELD_AT", "props": {}}, {"s": "S001", "t": "A01", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-09T10:00:00", "status": "已报名"}}, {"s": "S002", "t": "A01", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-09T11:30:00", "status": "已报名"}}, {"s": "S003", "t": "A01", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-10T09:05:00", "status": "已报名"}}, {"s": "S004", "t": "A01", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-12T20:31:00", "status": "已报名"}}, {"s": "S005", "t": "A02", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-14T13:20:00", "status": "已报名"}}, {"s": "S006", "t": "A02", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-14T19:02:00", "status": "已报名"}}, {"s": "S007", "t": "A02", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-15T08:47:00", "status": "已报名"}}, {"s": "S004", "t": "A03", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-11T16:25:00", "status": "已报名"}}, {"s": "S007", "t": "A03", "type": "SIGNED_UP", "props": {"signedAt": "2025-10-13T12:09:00", "status": "已报名"}}, {"s": "S004", "t": "A04", "type": "SIGNED_UP", "props": {"signedAt": "2025-11-02T21:15:00", "status": "已报名"}}, {"s": "S007", "t": "A04", "type": "SIGNED_UP", "props": {"signedAt": "2025-11-03T07:38:00", "status": "已报名"}}, {"s": "S008", "t": "A04", "type": "SIGNED_UP", "props": {"signedAt": "2025-11-03T22:04:00", "status": "已报名"}}, {"s": "S001", "t": "A01", "type": "ATTENDED", "props": {}}, {"s": "S002", "t": "A01", "type": "ATTENDED", "props": {}}, {"s": "S005", "t": "A02", "type": "ATTENDED", "props": {}}, {"s": "S006", "t": "A02", "type": "ATTENDED", "props": {}}, {"s": "S004", "t": "A03", "type": "ATTENDED", "props": {}}, {"s": "S007", "t": "A03", "type": "ATTENDED", "props": {}}, {"s": "S001", "t": "G01", "type": "HAS_TAG", "props": {}}, {"s": "S002", "t": "G01", "type": "HAS_TAG", "props": {}}, {"s": "S002", "t": "G04", "type": "HAS_TAG", "props": {}}, {"s": "S003", "t": "G02", "type": "HAS_TAG", "props": {}}, {"s": "S004", "t": "G02", "type": "HAS_TAG", "props": {}}, {"s": "S004", "t": "G04", "type": "HAS_TAG", "props": {}}, {"s": "S005", "t": "G01", "type": "HAS_TAG", "props": {}}, {"s": "S005", "t": "G03", "type": "HAS_TAG", "props": {}}, {"s": "S006", "t": "G03", "type": "HAS_TAG", "props": {}}, {"s": "S007", "t": "G02", "type": "HAS_TAG", "props": {}}, {"s": "S008", "t": "G04", "type": "HAS_TAG", "props": {}}, {"s": "C01", "t": "G01", "type": "TAGGED_WITH", "props": {}}, {"s": "C02", "t": "G03", "type": "TAGGED_WITH", "props": {}}, {"s": "C03", "t": "G02", "type": "TAGGED_WITH", "props": {}}, {"s": "C04", "t": "G04", "type": "TAGGED_WITH", "props": {}}, {"s": "S005", "t": "R01", "type": "APPLIED_TO", "props": {"status": "待审核", "submittedAt": "2025-09-20"}}, {"s": "S006", "t": "R01", "type": "APPLIED_TO", "props": {"status": "待审核", "submittedAt": "2025-09-21"}}, {"s": "S004", "t": "R02", "type": "APPLIED_TO", "props": {"status": "已通过", "submittedAt": "2025-09-19"}}, {"s": "R01", "t": "C01", "type": "FOR_CLUB", "props": {}}, {"s": "R02", "t": "C03", "type": "FOR_CLUB", "props": {}}, {"s": "C01", "t": "N01", "type": "PUBLISHES", "props": {}}, {"s": "C03", "t": "N02", "type": "PUBLISHES", "props": {}}, {"s": "N01", "t": "A01", "type": "ANNOUNCES", "props": {}}, {"s": "N02", "t": "A03", "type": "ANNOUNCES", "props": {}}, {"s": "S001", "t": "W01", "type": "WON", "props": {}}, {"s": "S006", "t": "W02", "type": "WON", "props": {}}, {"s": "W01", "t": "C01", "type": "AWARDED_TO", "props": {}}, {"s": "W02", "t": "C02", "type": "AWARDED_TO", "props": {}}, {"s": "S001", "t": "A01", "type": "ORGANIZED", "props": {}}, {"s": "S006", "t": "A02", "type": "ORGANIZED", "props": {}}, {"s": "S007", "t": "A03", "type": "ORGANIZED", "props": {}}, {"s": "A01", "t": "M01", "type": "IN_TERM", "props": {}}, {"s": "A02", "t": "M01", "type": "IN_TERM", "props": {}}, {"s": "A03", "t": "M01", "type": "IN_TERM", "props": {}}, {"s": "A04", "t": "M01", "type": "IN_TERM", "props": {}}], "scenarios": [{"id": "F8", "title": "F8 场地冲突", "desc": "东区操场 2025-10-18：秋季观星夜 与 校园人像外拍 撞车", "nodes": ["A01", "A03", "V01"], "rels": ["HELD_AT"]}, {"id": "F9", "title": "F9 招新转化", "desc": "报名了却没转正：李思远、周雨桐", "nodes": ["S005", "S006", "R01", "C01"], "rels": ["APPLIED_TO", "FOR_CLUB"]}, {"id": "F33", "title": "F33 报名者筛选", "desc": "按标签算匹配度：李思远命中「天文观测」", "nodes": ["S005", "S006", "S004", "R01", "R02", "C01", "C03", "G01", "G02", "G03"], "rels": ["APPLIED_TO", "FOR_CLUB", "TAGGED_WITH", "HAS_TAG"]}, {"id": "F6", "title": "F6 报名与签到", "desc": "观星夜报名 4 人、签到 2 人：王梓涵、陈嘉禾报名没来", "nodes": ["A01", "S001", "S002", "S003", "S004"], "rels": ["SIGNED_UP", "ATTENDED"]}, {"id": "F32", "title": "F32 跨社团成员", "desc": "陈嘉禾同时在星野天文社与拾光摄影社", "nodes": ["S003", "C01", "C03"], "rels": ["MEMBER_OF"]}, {"id": "F17", "title": "F17 兴趣匹配", "desc": "李思远感兴趣「天文观测」但还没入社", "nodes": ["S005", "G01", "C01"], "rels": ["HAS_TAG", "TAGGED_WITH"]}]};
+/* ══════════════════════════════════════════════════════════════════════════
+   2026-10-09 补齐（产品官演示用）
+   点一个场景 = 跑一次查询 —— 右栏直接出「结果表」，不出现 Cypher 代码。
+   仓库共 9 个查询场景，本原型原有 6 个（F6 / F8 / F9 / F17 / F32 / F33），
+   这里补上缺的 F5 社团成员名单 · F7 场地占用 · F10 人物参与记录。
+   结果全部由图数据现算，没有写死 —— 图上改了数据，结果就跟着变。
+   ══════════════════════════════════════════════════════════════════════════ */
+const QRESULT = {
+F5(){
+  const rs = LINKS.filter(l => l.type==='MEMBER_OF' && l.t==='C01');
+  return { cols:['姓名','职务','入社时间','状态'],
+    rows: rs.map(l => [nm(l.s), l.props.role, l.props.joinDate, l.props.status])
+            .sort((a,b) => (a[3]==='已退出'?1:0) - (b[3]==='已退出'?1:0)) };
+},
+F6(){
+  const rs = LINKS.filter(l => l.type==='SIGNED_UP' && l.t==='A01');
+  const rows = rs.map(l => {
+    const att = LINKS.some(x => x.type==='ATTENDED' && x.s===l.s && x.t===l.t);
+    return { v:[nm(l.s), '已报名', att ? '已签到' : '报名未到'], miss:!att };
+  }).sort((a,b) => (a.miss?1:0) - (b.miss?1:0));
+  return { cols:['学生','报名状态','签到情况'], rows: rows.map(r => r.v) };
+},
+F7(){
+  const rs = LINKS.filter(l => l.type==='HELD_AT' && l.t==='V01');
+  return { cols:['日期','活动'],
+    rows: rs.map(l => [dateOf(l.s), nm(l.s)]).sort((a,b) => a[0] < b[0] ? -1 : 1) };
+},
+F8(){
+  const hs = LINKS.filter(l => l.type==='HELD_AT'), rows = [];
+  for (let i=0;i<hs.length;i++) for (let j=i+1;j<hs.length;j++){
+    const a = hs[i], b = hs[j];
+    if (a.t !== b.t) continue;
+    if (dateOf(a.s) !== dateOf(b.s)) continue;
+    const ab = a.s < b.s ? [a,b] : [b,a];
+    rows.push([nm(a.t), dateOf(ab[0].s), nm(ab[0].s), nm(ab[1].s), '需要改期']);
+  }
+  return { cols:['场地','冲突日期','活动一','活动二','建议'], rows };
+},
+F9(){
+  const rows = [];
+  LINKS.filter(l => l.type==='APPLIED_TO' && l.t==='R01').forEach(l => {
+    if (LINKS.some(x => x.type==='MEMBER_OF' && x.s===l.s && x.t==='C01')) return;
+    rows.push([nm(l.s), majorOf(l.s), l.props.status]);
+  });
+  return { cols:['学生','专业','申请状态'], rows };
+},
+F10(){
+  const S = 'S003';
+  const mem = LINKS.filter(l => l.type==='MEMBER_OF' && l.s===S);
+  const su  = LINKS.filter(l => l.type==='SIGNED_UP' && l.s===S);
+  const at  = LINKS.filter(l => l.type==='ATTENDED'  && l.s===S);
+  const wo  = LINKS.filter(l => l.type==='WON'       && l.s===S);
+  return { cols:['项目','内容'], rows:[
+    ['加入社团',   mem.map(l => nm(l.t)+'（'+l.props.role+'）').join('、') || '—'],
+    ['报名活动',   su.map(l => nm(l.t)).join('、') || '—'],
+    ['已签到活动', at.map(l => nm(l.t)).join('、') || '—'],
+    ['获奖',       wo.map(l => nm(l.t)).join('、') || '—'] ] };
+},
+F17(){
+  const rows = [];
+  LINKS.filter(l => l.type==='HAS_TAG' && l.t==='G01').forEach(l => {
+    if (LINKS.some(x => x.type==='MEMBER_OF' && x.s===l.s && x.t==='C01')) return;
+    rows.push([nm(l.s), majorOf(l.s), '天文观测']);
+  });
+  return { cols:['学生','专业','兴趣'], rows };
+},
+F32(){
+  const map = {};
+  LINKS.filter(l => l.type==='MEMBER_OF' && l.props.status==='在册')
+       .forEach(l => { (map[l.s] = map[l.s] || []).push(l.t); });
+  const rows = [];
+  Object.keys(map).forEach(s => {
+    if (map[s].length > 1) rows.push([nm(s), map[s].map(nm).join('、'), map[s].length + ' 个']);
+  });
+  return { cols:['学生','社团列表','社团数'], rows };
+},
+F33(){
+  const clubTags = LINKS.filter(l => l.type==='TAGGED_WITH' && l.s==='C01').map(l => l.t);
+  const rows = LINKS.filter(l => l.type==='APPLIED_TO' && l.t==='R01').map(l => {
+    const mine = LINKS.filter(x => x.type==='HAS_TAG' && x.s===l.s).map(x => x.t);
+    const hitT = mine.filter(g => clubTags.includes(g));
+    return { v:[nm(l.s), majorOf(l.s), hitT.length ? hitT.map(nm).join('、') : '无', hitT.length], n:hitT.length };
+  }).sort((a,b) => b.n - a.n);
+  return { cols:['报名学生','专业','命中标签','匹配度'], rows: rows.map(r => r.v) };
+}
+};
+
+/* —— 补上缺的 3 个场景 —— */
+D.scenarios.push(
+  { id:'F5', title:'F5 社团成员名单',
+    desc:'星野天文社：在册 3 人（林一舟／赵敏／陈嘉禾）＋ 已退出 1 人（郑亦航，退出后关系保留）',
+    nodes:['C01','S001','S002','S003','S008'], rels:['MEMBER_OF'] },
+  { id:'F7', title:'F7 场地占用',
+    desc:'东区操场承接 3 场活动：秋季观星夜／校园人像外拍／夜跑打卡周',
+    nodes:['V01','A01','A03','A04'], rels:['HELD_AT'] },
+  { id:'F10', title:'F10 人物参与记录',
+    desc:'陈嘉禾：跨 2 个社团（星野天文社／拾光摄影社）、报名 1 场活动、暂无签到记录',
+    nodes:['S003','C01','C03','A01'], rels:['MEMBER_OF','SIGNED_UP'] }
+);
+
+/* —— 挂上结果集，并按查询场景的正常顺序排好 —— */
+D.scenarios.forEach(s => { s.result = QRESULT[s.id] || null; });
+const SCENE_ORDER = ['F5','F6','F7','F8','F9','F10','F17','F32','F33'];
+D.scenarios.sort((a,b) => SCENE_ORDER.indexOf(a.id) - SCENE_ORDER.indexOf(b.id));
+
+/* 取节点的中文名称。NMAP 在下方定义，但这里只在「运行时」被调用，顺序没问题。 */
+const nm = id => (NMAP[id] ? NMAP[id].name : id);
+/* v1 的节点只有 note 文本、没有结构化字段，这里按 note 的分段取用：
+     活动 note ＝「2025-10-18 · 东区操场 · 名额 40 · 已报名 4 人 / 签到 2 人」
+     学生 note ＝「2024 级 · 天文学 · 星野天文社社长」            */
+const partOf  = (id, n) => (((NMAP[id] && NMAP[id].note) || '').split('·')[n] || '').trim();
+const dateOf  = id => partOf(id, 0);
+const majorOf = id => partOf(id, 1);
+
 const LABEL_ZH = {Club:'社团',Student:'学生',Department:'部门',Teacher:'指导老师',Activity:'活动',
   Venue:'场地',InterestTag:'兴趣标签',Recruitment:'招新计划',Notice:'通知',Award:'获奖',Term:'学期'};
 const REL_ZH = {MEMBER_OF:'加入社团',IN_DEPARTMENT:'隶属部门',BELONGS_TO:'部门属于社团',ADVISES:'指导社团',
@@ -123,9 +253,16 @@ const PROP_ZH = {clubId:'社团编号',studentId:'学号',deptId:'部门编号',
   signedAt:'报名时间',submittedAt:'提交时间'};
 
 const NMAP = {}; D.nodes.forEach(n => NMAP[n.id] = n);
-const LINKS = D.links.map((l,i) => ({...l, i}));
+/* 直接引用 D.links —— 这样「业务动作」改到的就是图上真正在用的数据
+   （原版这里是浅拷贝 {…l, i}，动作改了图上看不到；l.i 全文件都没被用到） */
+const LINKS = D.links;
 const near = {}; D.nodes.forEach(n => near[n.id] = new Set([n.id]));
 LINKS.forEach(l => { near[l.s].add(l.t); near[l.t].add(l.s); });
+
+/* 初始快照，供「重置」复原 */
+const SEED_LINKS = JSON.parse(JSON.stringify(D.links));
+const SEED_NOTES = {}; D.nodes.forEach(n => SEED_NOTES[n.id] = n.note);
+const SEED_DEG   = {}; D.nodes.forEach(n => SEED_DEG[n.id] = n.deg);
 
 const svg = document.getElementById('svg'), vp = document.getElementById('vp');
 const NS = 'http://www.w3.org/2000/svg';
@@ -264,7 +401,19 @@ function render(){
 }
 function detail(){
   const box = document.getElementById('detail');
-  if (!selected){ box.innerHTML = '<div class="hint">点左边图里的任意一个节点，这里会显示它的中文属性与直接关系。</div>'; return; }
+  // 有激活的场景时，先在右栏顶部给出「查询结果」
+  const head = active ? (function(){
+    const r = active.result ? active.result() : null;
+    const body = (r && r.rows.length)
+      ? '<table><thead><tr>' + r.cols.map(c => '<th>'+c+'</th>').join('') + '</tr></thead><tbody>'
+        + r.rows.map(row => '<tr>' + row.map(c => '<td>'+c+'</td>').join('') + '</tr>').join('')
+        + '</tbody></table><div class="hint" style="margin-top:5px">命中 <b>' + r.rows.length + '</b> 行</div>'
+      : '<div class="hint">这个场景在当前数据下没有命中任何记录。</div>';
+    return '<div class="card"><h4>' + active.title + '</h4>'
+         + '<div class="hint">' + active.desc + '</div>'
+         + '<h4 style="margin:10px 0 4px">查询结果</h4>' + body + '</div>';
+  })() : '';
+  if (!selected){ box.innerHTML = head || '<div class="hint">点左边图里的任意一个节点，这里会显示它的中文属性与直接关系。</div>'; return; }
   const n = NMAP[selected];
   const rows = [`<div><span class="badge" style="background:var(--c-${n.label})">${LABEL_ZH[n.label]}</span>
                  <b style="margin-left:8px">${n.name}</b></div>`];
@@ -280,11 +429,120 @@ function detail(){
             <span style="color:var(--muted)">${extra ? '（'+extra+'）' : ''}</span></div>`;
   }).join('');
   rows.push('<h3 style="margin-top:12px">直接关系</h3>' + rels);
-  box.innerHTML = rows.join('');
+  box.innerHTML = head + rows.join('');
 }
 
-document.getElementById('stats').innerHTML =
-  `<b>${D.nodes.length}</b> 个实体 · <b>${D.links.length}</b> 条关系 · <b>${Object.keys(labelCount).length}</b> 类对象 · <b>${Object.keys(REL_ZH).length}</b> 种关系`;
+/* ══════════════════════════════════════════════════════════════════════════
+   业务动作（3 个）—— 对应仓库 cypher/05_actions.cypher
+   点一下 = 真的改动页面里的图数据：边上多了 / 状态变了 / 计数变了，
+   右栏同时给出「执行前 → 执行后」对比。
+   ⚠️ 只改本页面内存，不写回 Neo4j；刷新即复原（演示时不怕点乱）。
+   ══════════════════════════════════════════════════════════════════════════ */
+function stats(){
+  const changed = LINKS.length !== SEED_LINKS.length;
+  document.getElementById('stats').innerHTML =
+    `<b>${D.nodes.length}</b> 个实体 · `
+    + `<b${changed ? ' style="color:var(--edge-hl)"' : ''}>${LINKS.length}</b> 条关系 · `
+    + `<b>${Object.keys(labelCount).length}</b> 类对象 · <b>${Object.keys(REL_ZH).length}</b> 种关系`
+    + (changed ? ' <span style="color:var(--edge-hl)">（动作已改数据）</span>' : '');
+}
+/* 让活动节点的说明文字跟着实际数据走，避免悬停提示和结果表对不上 */
+function syncNotes(){
+  D.nodes.forEach(n => {
+    if (n.label !== 'Activity') return;
+    const su = LINKS.filter(l => l.type==='SIGNED_UP' && l.t===n.id).length;
+    const at = LINKS.filter(l => l.type==='ATTENDED'  && l.t===n.id).length;
+    n.note = SEED_NOTES[n.id].replace(/已报名 \d+ 人( \/ 签到 \d+ 人)?/, '已报名 '+su+' 人 / 签到 '+at+' 人');
+  });
+}
+function refresh(){
+  D.nodes.forEach(n => { n.deg = LINKS.filter(l => l.s===n.id || l.t===n.id).length; });
+  Object.keys(near).forEach(k => near[k] = new Set([k]));
+  LINKS.forEach(l => { near[l.s].add(l.t); near[l.t].add(l.s); });
+  syncNotes();
+  build(); render(); stats();
+}
+function countActive(club){ return LINKS.filter(l => l.type==='MEMBER_OF' && l.t===club && l.props.status==='在册').length; }
+function signups(act){ return LINKS.filter(l => l.type==='SIGNED_UP' && l.t===act).length; }
+function relOf(s,t){ return LINKS.find(l => l.s===s && l.t===t); }
+
+const ACTS = [
+{ label:'学生加入社团', sub:'李思远 → 星野天文社',
+  before(){ return { '星野天文社在册': countActive('C01') + ' 人', '关系总数': LINKS.length, '李思远的申请': (relOf('S005','R01')||{props:{}}).props.status || '—' }; },
+  do(){
+    let added = 0;
+    if (!LINKS.some(l => l.type==='MEMBER_OF' && l.s==='S005' && l.t==='C01')){
+      LINKS.push({s:'S005', t:'C01', type:'MEMBER_OF', props:{role:'成员', joinDate:'2025-10-09', status:'在册'}});
+      added = 1;
+    }
+    const ap = relOf('S005','R01'); if (ap) ap.props.status = '已通过';
+    return added;
+  },
+  what:'建立「李思远 —加入社团→ 星野天文社」这条关系，并把招新申请状态改成「已通过」。' },
+
+{ label:'学生报名活动', sub:'郑亦航 → 秋季观星夜',
+  before(){ return { '秋季观星夜已报名': signups('A01') + ' 人', '关系总数': LINKS.length }; },
+  do(){
+    if (LINKS.some(l => l.type==='SIGNED_UP' && l.s==='S008' && l.t==='A01')) return 0;
+    LINKS.push({s:'S008', t:'A01', type:'SIGNED_UP', props:{signedAt:'2025-10-09 18:30', status:'已报名'}});
+    return 1;
+  },
+  what:'建立「郑亦航 —报名活动→ 秋季观星夜」这条关系，报名名单里多一人。' },
+
+{ label:'成员退出社团', sub:'王梓涵 ← 拾光摄影社',
+  before(){ const m = relOf('S004','C03'); return { '王梓涵状态': (m ? m.props.status : '—'), '拾光摄影社在册': countActive('C03') + ' 人', '关系总数': LINKS.length }; },
+  do(){
+    const m = relOf('S004','C03');
+    if (m){ m.props.status = '已退出'; m.props.quitDate = '2025-10-09'; }
+    return 0;
+  },
+  what:'把这条成员关系的状态改成「已退出」并记录退出时间 —— <b>关系保留、不删除</b>，历史可回溯。' }
+];
+
+const alist = document.getElementById('alist');
+ACTS.forEach(a => {
+  const b = document.createElement('button');
+  b.className = 'actbtn'; b.textContent = a.label; b.title = a.sub;
+  b.onclick = () => {
+    document.querySelectorAll('#alist .actbtn').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    active = null; selected = null;
+    document.querySelectorAll('#bar button').forEach(x => x.classList.remove('on'));
+    const before = a.before();
+    const added = a.do();
+    refresh();
+    const after = a.before();
+    const rows = Object.keys(before).map(k => {
+      const b0 = before[k], a0 = after[k], chg = String(b0) !== String(a0);
+      return '<tr' + (chg ? ' class="hl"' : '') + '><td>' + k + '</td><td>' + b0 + '</td><td>' + (chg ? '<b>'+a0+'</b>' : a0) + '</td></tr>';
+    }).join('');
+    document.getElementById('detail').innerHTML =
+      '<div class="card"><h4>' + a.label + '</h4><div class="hint">' + a.sub + '</div>'
+      + '<h4 style="margin:10px 0 4px">执行前 → 执行后</h4>'
+      + '<table><thead><tr><th>项目</th><th>执行前</th><th>执行后</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+      + '<div class="card"><h4>这个动作做了什么</h4><div class="hint">' + a.what + '</div>'
+      + '<div class="hint" style="margin-top:6px">关系总数：<b>' + SEED_LINKS.length + '</b> → <b>' + LINKS.length + '</b>'
+      + (LINKS.length !== SEED_LINKS.length
+          ? '（+' + (LINKS.length - SEED_LINKS.length) + ' 条）'
+          : '（<b>不变</b> —— 退出只改状态，不新建也不删除关系）')
+      + '</div></div>';
+    document.getElementById('tip').textContent = a.label + '：' + a.sub;
+  };
+  alist.appendChild(b);
+});
+document.getElementById('areset').onclick = () => {
+  LINKS.length = 0;
+  SEED_LINKS.forEach(l => LINKS.push(JSON.parse(JSON.stringify(l))));
+  D.nodes.forEach(n => { n.deg = SEED_DEG[n.id]; n.note = SEED_NOTES[n.id]; });
+  active = null; selected = null;
+  document.querySelectorAll('#alist .actbtn, #bar button').forEach(x => x.classList.remove('on'));
+  document.getElementById('tip').textContent = '把鼠标移到节点上试试';
+  refresh();
+  document.getElementById('detail').innerHTML =
+    '<div class="hint">已重置回初始状态：<b>35 实体 / 74 关系</b>。点底部查询场景，或点左侧业务动作重新演示。</div>';
+};
+
+stats();
 build(); render();
 </script>
 </body>
