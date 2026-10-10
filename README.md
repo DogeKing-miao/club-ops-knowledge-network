@@ -285,12 +285,7 @@ club-ops-knowledge-network/            ← 本目录 = 可直接上传 GitHub �
 - [x] 使用说明：`README.md`（本文件）、`docs\README-使用说明.md`、`docs\Neo4j 查询操作手册.docx`
 - [x] 开发日志与日程记录：`docs\开发日志与日程记录.md`（9/30–10/08 逐日写实，含日程表与里程碑）
 - [x] 仓库化：已 `git init` 并完成提交，`.gitignore` 已忽略生成脚本 / 历史版本 / 临时文件 / 缓存
-
-### 尚未完成 ⚠️
-
-- [ ] **推到 GitHub**：仓库结构已就绪，尚未 `git remote add origin …` / `git push -u origin main`
-      （建议仓库名 `club-ops-knowledge-network`，默认分支 `main`）
-- [ ] **确认官方截止时间**：任务书写明以「纳新交流群」通知为准（答辩 / 评比时间：2026 年 10 月 12 日至 16 日）
+- [x] **已推送到 GitHub**：<https://github.com/DogeKing-miao/club-ops-knowledge-network>（分支 `main`，2026-10-09 推送成功）
 
 ---
 
